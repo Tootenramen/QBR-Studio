@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="en" data-theme="paper">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QBR Studio - account data in, executive-ready QBR out</title>
+<meta name="description" content="Turn one account's monthly usage and outcomes into a print-ready Quarterly Business Review in seconds: health score with live weights, goals, heatmap, wins, risks, renewal risk, a 60-second talk track and a CFO view. 100% client-side, fictional sample data.">
+<meta property="og:title" content="QBR Studio">
+<meta property="og:description" content="Account data in, executive-ready Quarterly Business Review out. Explainable health score, talk track, CFO view, print to PDF.">
+<meta property="og:image" content="https://tootenramen.github.io/QBR-Studio/docs/hero.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="QBR Studio">
+<meta name="twitter:description" content="Account data in, executive-ready Quarterly Business Review out.">
+<meta name="twitter:image" content="https://tootenramen.github.io/QBR-Studio/docs/hero.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232b3fd6'/%3E%3Cpath d='M8 21l5-6 4 3 7-9' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3eee4;--card:#fbf8f1;--ink:#1b1a17;--mut:#5b574d;--line:#dcd3c1;--track:#e6dfd0;
+  --acc:#2b3fd6;--acc-soft:#e3e6fb;--on-acc:#fff;--good:#2a7048;--warn:#8f5b00;--bad:#b3341f;
+  --good-soft:#dcebe1;--warn-soft:#f3e6c8;--bad-soft:#f4dcd5;
+  --gut:clamp(16px,3vw,32px);--serif:'Fraunces',Georgia,'Times New Roman',serif;--sans:'Inter',system-ui,'Segoe UI',Roboto,sans-serif;
+  --shadow:0 1px 0 rgba(27,26,23,.04),0 18px 40px -24px rgba(27,26,23,.28);
+}
+:root[data-theme="ink"]{
+  --bg:#12110e;--card:#1b1a16;--ink:#f0ebe0;--mut:#a9a396;--line:#37332b;--track:#2b2822;
+  --acc:#8d9dff;--acc-soft:#242850;--on-acc:#12110e;--good:#6fcf97;--warn:#e3b04b;--bad:#ff8f7a;
+  --good-soft:#1d3226;--warn-soft:#38301a;--bad-soft:#3c2420;--shadow:0 18px 40px -24px #000;
+}
+*{box-sizing:border-box}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.55 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--acc)}
+:focus-visible{outline:3px solid var(--acc);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.skip{position:absolute;left:8px;top:-60px;background:var(--ink);color:var(--bg);padding:8px 12px;border-radius:6px;z-index:100}
+.skip:focus{top:8px}
+.num,.big{font-variant-numeric:lining-nums tabular-nums}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topin{max-width:calc(1240px + 2*var(--gut));margin:0 auto;padding:10px var(--gut);display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.brand{display:flex;align-items:center;gap:10px;font:600 1.15rem var(--serif);letter-spacing:-.01em;margin-right:auto}
+.brand svg{width:26px;height:26px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--card)}
+.seg button{border:0;background:none;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:500;font-size:.9rem;color:var(--mut)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);padding:7px 13px;border-radius:999px;cursor:pointer;font-weight:500;font-size:.9rem;display:inline-flex;gap:7px;align-items:center}
+.btn:hover{border-color:var(--ink)}
+.btn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.sm{padding:4px 10px;font-size:.82rem}
+
+/* chooser */
+.wrap{max-width:calc(1240px + 2*var(--gut));margin:0 auto;padding:0 var(--gut)}
+.chooser{padding-top:22px;padding-bottom:8px}
+.chooser h2{margin:0 0 4px;font:500 clamp(1.3rem,2.2vw,1.7rem)/1.2 var(--serif);letter-spacing:-.01em}
+.chooser p{margin:0 0 14px;color:var(--mut)}
+.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.pick{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;min-height:92px;transition:transform .2s,border-color .2s}
+.pick:hover{transform:translateY(-2px);border-color:var(--ink)}
+.pick:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.pick[aria-current="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.pick .k{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.pick .t{font:500 1.05rem/1.25 var(--serif)}
+.pick .s{font-size:.85rem;color:var(--mut);display:flex;align-items:center;gap:8px;margin-top:auto}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;background:var(--mut)}
+.dot.good{background:var(--good)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+
+/* deck */
+#deck{counter-reset:s;padding:20px var(--gut) 40px;display:flex;flex-direction:column;gap:22px}
+.slide{scroll-margin-top:76px;counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);padding:clamp(22px,3.4vw,52px);max-width:1240px;width:100%;margin:0 auto;position:relative}
+.slide[hidden]{display:none}
+.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);font-weight:600;display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.slide:not(.cover) .eyebrow::before{content:counter(s,decimal-leading-zero);color:var(--acc);font-family:var(--serif);font-size:1rem;letter-spacing:0}
+.slide h2{margin:0 0 6px;font:500 clamp(1.6rem,3vw,2.4rem)/1.12 var(--serif);letter-spacing:-.02em}
+.lede{color:var(--mut);margin:0 0 22px;max-width:70ch}
+.sfoot{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.78rem;color:var(--mut)}
+.fict{display:inline-flex;gap:8px;align-items:center;font-size:.78rem;font-weight:600;color:var(--mut);border:1px dashed var(--line);border-radius:999px;padding:3px 11px}
+.cover{padding-top:clamp(26px,4vw,60px)}
+.cgrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:clamp(20px,4vw,56px);align-items:center}
+.verdict{margin:14px 0 0;font:500 clamp(1.85rem,3.6vw,3.15rem)/1.08 var(--serif);letter-spacing:-.025em;text-wrap:balance}
+.acct{font:600 1.05rem var(--sans);margin:2px 0 0;color:var(--ink)}
+.hring{position:relative;width:min(100%,300px);aspect-ratio:1;margin:0 auto}
+.hring .in-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.big{font:500 clamp(4rem,9vw,6.4rem)/.95 var(--serif);letter-spacing:-.04em}
+.band{display:inline-flex;gap:6px;align-items:center;font-weight:600;font-size:.88rem;margin-top:6px;padding:3px 12px;border-radius:999px}
+.band.good,.tag.good{background:var(--good-soft);color:var(--good)}
+.band.warn,.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.band.bad,.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.delta{font-size:.85rem;color:var(--mut);margin-top:4px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:clamp(24px,4vw,44px);border-top:1px solid var(--line)}
+.kpi{padding:16px 18px 4px 0}
+.kpi+.kpi{padding-left:18px;border-left:1px solid var(--line)}
+.kpi .l{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.kpi .v{font:500 clamp(1.7rem,3vw,2.5rem)/1.1 var(--serif);letter-spacing:-.02em;margin-top:2px}
+.kpi .n{font-size:.84rem;color:var(--mut)}
+
+/* rings & bars */
+.ring{width:100%;height:100%;display:block}
+.ring .trk{fill:none;stroke:var(--track)}
+.ring .arc{fill:none;stroke:var(--acc);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100*(1 - var(--p)))}
+.ring.good .arc{stroke:var(--good)}.ring.warn .arc{stroke:var(--warn)}.ring.bad .arc{stroke:var(--bad)}
+.motion .arc{transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1)}
+.motion .slide:not(.in) .arc{stroke-dashoffset:100}
+.bar{height:10px;border-radius:99px;background:var(--track);overflow:hidden}
+.fill{height:100%;width:var(--w);border-radius:99px;background:var(--acc)}
+.fill.good{background:var(--good)}.fill.warn{background:var(--warn)}.fill.bad{background:var(--bad)}.fill.mut{background:var(--mut)}
+.motion .fill{transition:width 1.1s cubic-bezier(.2,.7,.2,1)}
+.motion .slide:not(.in) .fill{width:0}
+.draw{stroke-dasharray:1;stroke-dashoffset:0}
+.motion .draw{transition:stroke-dashoffset 1.5s ease}
+.motion .slide:not(.in) .draw{stroke-dashoffset:1}
+.tag{font-size:.74rem;font-weight:600;padding:2px 9px;border-radius:99px;background:var(--acc-soft);color:var(--acc);display:inline-block}
+
+/* health slide */
+.comps{display:grid;gap:18px}
+.comp{display:grid;grid-template-columns:150px minmax(0,1fr) 120px;gap:8px 18px;align-items:center}
+.comp .nm{font-weight:600}
+.comp .sub{grid-column:2/4;font-size:.85rem;color:var(--mut);margin-top:-8px}
+.comp .sc{text-align:right;font:500 1.6rem var(--serif)}
+.comp .sc small{font:400 .78rem var(--sans);color:var(--mut);display:block}
+details.how{margin-top:26px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+details.how summary{cursor:pointer;padding:14px 18px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:center}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::after{content:"+";margin-left:auto;font:500 1.4rem var(--serif);color:var(--acc)}
+details.how[open] summary::after{content:"\2212"}
+.howbody{padding:4px 18px 20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px}
+.sl{display:grid;grid-template-columns:104px minmax(0,1fr) 62px;gap:10px;align-items:center;margin-bottom:10px}
+.sl label{font-weight:500;font-size:.92rem}
+.sl output{font-variant-numeric:tabular-nums;font-size:.84rem;color:var(--mut);text-align:right}
+input[type=range]{width:100%;accent-color:var(--acc);height:28px;margin:0}
+.formula{font-size:.92rem;color:var(--mut)}
+.formula code{font:500 .86rem ui-monospace,Consolas,monospace;background:var(--card);border:1px solid var(--line);padding:2px 6px;border-radius:6px;color:var(--ink);display:inline-block;margin:2px 0}
+.formula ul{margin:8px 0 0;padding-left:18px}
+.live{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+.live .big{font-size:3rem}
+
+/* goals */
+.goals{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.goal{border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:center;background:var(--bg)}
+.goal .gr{position:relative;width:96px;height:96px}
+.goal .gr .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:500 1.3rem var(--serif)}
+.goal h3{margin:0 0 4px;font:600 .95rem/1.3 var(--sans)}
+.goal p{margin:0 0 6px;font-size:.82rem;color:var(--mut)}
+.summ{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:20px}
+.summ .v{font:500 2.2rem/1 var(--serif)}
+.summ .l{font-size:.8rem;color:var(--mut)}
+
+/* adoption */
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(18px,3vw,40px)}
+.panel h3{margin:0 0 8px;font:600 .95rem var(--sans)}
+.chart{width:100%;min-height:200px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.ax{stroke:var(--line);stroke-width:1}
+.tx{fill:var(--mut);font:400 11px var(--sans)}
+.tx.b{fill:var(--ink);font-weight:600}
+.c-act{stroke:var(--acc);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.c-lic{stroke:var(--mut);fill:none;stroke-width:2;stroke-dasharray:5 5}
+.c-area{fill:var(--acc);opacity:.1}
+.c-pt{fill:var(--card);stroke:var(--acc);stroke-width:2.5}
+.c-open{fill:var(--mut);opacity:.55}.c-close{fill:var(--acc)}
+.legend{display:flex;gap:16px;font-size:.8rem;color:var(--mut);margin:6px 0 0;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.hwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.heat{border-collapse:separate;border-spacing:3px;width:100%;font-size:.8rem;min-width:430px}
+.heat th{font-weight:600;color:var(--mut);text-align:center;padding:4px 2px;font-size:.72rem;line-height:1.2}
+.heat th[scope=row]{text-align:left;color:var(--ink);font-size:.82rem;padding-right:8px;white-space:nowrap}
+.heat td{text-align:center;padding:9px 2px;border-radius:6px;font-weight:600;font-variant-numeric:tabular-nums}
+.heat td.avg{background:none;color:var(--mut);font-weight:500}
+.hleg{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--mut);margin-top:8px}
+.hleg i{display:block;width:120px;height:8px;border-radius:4px;background:linear-gradient(90deg,#efe7d9,#aab8ff,#2b3fd6,#141e78)}
+.cards2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mc{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--bg)}
+.mc .l{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.mc .v{font:500 2rem/1.1 var(--serif);letter-spacing:-.02em}
+.mc .d{font-size:.8rem;color:var(--mut)}
+.mc svg{display:block;margin-top:4px}
+.up{color:var(--good)}.dn{color:var(--bad)}
+
+/* wins/risks */
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.win{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg);display:flex;flex-direction:column;gap:6px}
+.win .big{font-size:clamp(2.6rem,5vw,3.8rem);color:var(--acc)}
+.win h3{margin:0;font:600 1.02rem/1.3 var(--sans)}
+.win p{margin:0;color:var(--mut);font-size:.9rem}
+.risk{border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:12px;padding:18px 20px;background:var(--bg);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 24px;margin-bottom:12px}
+.risk.sev-hi{border-left-color:var(--bad)}.risk.sev-lo{border-left-color:var(--mut)}
+.risk h3{margin:0;font:600 1.02rem/1.3 var(--sans)}
+.risk p{margin:2px 0 0;color:var(--mut);font-size:.9rem}
+.risk .own{text-align:right;font-size:.85rem;color:var(--mut);min-width:170px}
+.risk .own b{display:block;color:var(--ink);font-weight:600}
+.risk .act{grid-column:1/-1;font-size:.9rem}
+.risk .act b{color:var(--acc)}
+
+/* meter */
+.meter{margin:8px 0 22px}
+.mtrack{position:relative;height:16px;border-radius:99px;display:flex;overflow:hidden}
+.mtrack span:nth-child(1){flex:25;background:var(--good-soft)}.mtrack span:nth-child(2){flex:25;background:var(--warn-soft)}.mtrack span:nth-child(3){flex:50;background:var(--bad-soft)}
+.mwrap{position:relative}
+.mark{position:absolute;top:-8px;left:calc(var(--p)*1%);width:4px;height:32px;margin-left:-2px;background:var(--ink);border-radius:2px}
+.motion .mark{transition:left 1.2s cubic-bezier(.2,.7,.2,1)}
+.motion .slide:not(.in) .mark{left:0}
+.mlab{display:flex;font-size:.75rem;color:var(--mut);margin-top:4px}
+.mlab span:nth-child(1){flex:25}.mlab span:nth-child(2){flex:25}.mlab span:nth-child(3){flex:50}
+.mhead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.mhead .big{font-size:clamp(3.4rem,7vw,5rem)}
+.reasons{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.reasons li{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;align-items:center;font-size:.94rem}
+.reasons .pts{font:500 1.2rem var(--serif);color:var(--bad);text-align:right}
+
+/* asks */
+table.asks{width:100%;border-collapse:collapse}
+.asks th{text-align:left;font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);padding:0 12px 10px 0;border-bottom:1px solid var(--ink)}
+.asks td{padding:16px 12px 16px 0;border-bottom:1px solid var(--line);vertical-align:top;font-size:.94rem}
+.asks td:first-child{font:500 1.1rem/1.3 var(--serif);width:32%}
+.asks .why{color:var(--mut)}
+.asks .when{white-space:nowrap;font-weight:600}
+
+/* story */
+.beats{display:grid;gap:4px}
+.beat{display:grid;grid-template-columns:72px minmax(0,1fr);gap:18px;padding:16px 18px;border-radius:14px;border:1px solid transparent}
+.beat .ts{font:500 1.25rem var(--serif);color:var(--acc);font-variant-numeric:tabular-nums}
+.beat .tt{font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.beat p{margin:2px 0 0;font:400 1.12rem/1.55 var(--serif)}
+.beat.on{background:var(--acc-soft);border-color:var(--acc)}
+.sbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:16px;color:var(--mut);font-size:.9rem}
+
+/* cfo */
+.cfo-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.stack{display:flex;height:44px;border-radius:10px;overflow:hidden;margin:8px 0 6px}
+.stack div{display:flex;align-items:center;padding:0 12px;font-weight:600;font-size:.88rem;white-space:nowrap;overflow:hidden}
+.stack .u{background:var(--acc);color:var(--on-acc)}.stack .i{background:var(--track);color:var(--ink)}
+.assume{font-size:.84rem;color:var(--mut);border-left:3px solid var(--line);padding-left:12px;margin-top:18px}
+
+/* drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(620px,100vw);background:var(--card);border-left:1px solid var(--line);box-shadow:-24px 0 60px -30px rgba(0,0,0,.4);z-index:50;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .3s ease,visibility .3s;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.dh{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.dh h2{margin:0;font:500 1.3rem var(--serif);margin-right:auto}
+.tabs{display:flex;gap:4px;padding:10px 18px 0;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 14px;cursor:pointer;font-weight:500;color:var(--mut);border-bottom:3px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--acc)}
+.dbody{overflow:auto;padding:16px 18px 40px;flex:1}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.fg label{display:grid;gap:3px;font-size:.78rem;color:var(--mut);font-weight:600}
+.fg label.full{grid-column:1/-1}
+.in-f{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+.dbody h3{margin:20px 0 8px;font:600 .95rem var(--sans)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.ed{border-collapse:collapse;width:100%;font-size:.85rem}
+.ed th{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);padding:6px 4px;text-align:left;white-space:nowrap}
+.ed td{padding:2px}
+.ed input{width:100%;min-width:56px;border:1px solid transparent;background:var(--bg);border-radius:6px;padding:5px 6px;font-variant-numeric:tabular-nums}
+.ed input:focus{border-color:var(--acc)}
+.ed td.m input{min-width:84px}.ed td.t input{min-width:150px}
+.xbtn{border:0;background:none;cursor:pointer;color:var(--mut);font-size:1.1rem;padding:2px 8px;border-radius:6px}
+.xbtn:hover{color:var(--bad)}
+textarea.paste{width:100%;min-height:300px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:12px;font:.82rem/1.5 ui-monospace,Consolas,monospace;resize:vertical}
+.err{color:var(--bad);font-size:.88rem;margin:8px 0;min-height:1.3em}
+.hint{font-size:.84rem;color:var(--mut)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(30px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:500;opacity:0;pointer-events:none;transition:.3s;z-index:90}
+.toast.show{opacity:1;transform:translateX(-50%)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink);width:min(720px,92vw);padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog textarea{width:100%;min-height:300px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px;font:.82rem/1.5 ui-monospace,Consolas,monospace}
+footer.pf{max-width:calc(1240px + 2*var(--gut));margin:0 auto;padding:10px var(--gut) 50px;color:var(--mut);font-size:.88rem;display:flex;gap:10px 24px;flex-wrap:wrap;justify-content:space-between}
+.empty{padding:20px;border:1px dashed var(--line);border-radius:12px;color:var(--mut)}
+
+@media (max-width:900px){
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cgrid,.two,.howbody{grid-template-columns:minmax(0,1fr)}
+  .three{grid-template-columns:minmax(0,1fr)}
+  .cfo-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(3){border-left:0;padding-left:0}
+  .comp{grid-template-columns:1fr 100px}
+  .comp .bar{grid-column:1/-1;order:3}.comp .sub{grid-column:1/-1;margin-top:0;order:4}
+  .risk{grid-template-columns:minmax(0,1fr)}.risk .own{text-align:left}
+}
+@media (max-width:620px){
+  .asks thead{display:none}
+  .asks,.asks tbody,.asks tr,.asks td{display:block;width:100%!important}
+  .asks tr{padding:14px 0;border-bottom:1px solid var(--line)}
+  .asks td{border:0;padding:3px 0}
+  .beat{grid-template-columns:minmax(0,1fr);gap:2px}
+  .fg{grid-template-columns:1fr}
+  .cards2{grid-template-columns:1fr}
+  .sl{grid-template-columns:90px minmax(0,1fr) 54px}
+  .seg button{padding:6px 10px}
+  .topbar{position:static}
+  .topin{gap:8px}
+  .tools{flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .tools .btn{white-space:nowrap;flex:none}
+  .chooser{padding-top:14px}.chooser p{display:none}
+  .cards{display:grid;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:78%;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}
+  .pick{scroll-snap-align:start;min-height:84px}
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto}}
+
+@page{size:letter landscape;margin:.4in}
+@media print{
+  :root,:root[data-theme="ink"]{--bg:#fff;--card:#fff;--ink:#1b1a17;--mut:#5b574d;--line:#d8d0be;--track:#e6dfd0;--acc:#2b3fd6;--acc-soft:#e3e6fb;--on-acc:#fff;--good:#2a7048;--warn:#8f5b00;--bad:#b3341f;--good-soft:#dcebe1;--warn-soft:#f3e6c8;--bad-soft:#f4dcd5;--shadow:none}
+  html{font-size:11.5px}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#fff}
+  .topbar,.chooser,.drawer,.toast,.noprint,.skip,footer.pf,dialog{display:none!important}
+  #deck{padding:0;gap:0;display:block}
+  .slide{box-shadow:none;border:0;border-radius:0;padding:0;margin:0;max-width:none;break-inside:avoid;min-height:0}
+  .slide:not(:first-child){break-before:page;page-break-before:always}
+  .chart{overflow:hidden;min-height:0}.chart svg{height:215px}
+  .fill{width:var(--w)!important;transition:none!important}.arc{stroke-dashoffset:calc(100*(1 - var(--p)))!important;transition:none!important}
+  .draw{stroke-dashoffset:0!important}.mark{left:calc(var(--p)*1%)!important}
+  details.how .sl input{display:none}details.how[open]>summary::after{content:""}
+  .verdict{font-size:2.4rem}.big{font-size:5rem}
+  .hwrap{overflow:visible}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#deck">Skip to the deck</a>
+
+<header class="topbar noprint">
+  <div class="topin">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="var(--acc)"/><path d="M8 21l5-6 4 3 7-9" fill="none" stroke="var(--on-acc)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      QBR Studio
+    </div>
+    <div class="seg" role="group" aria-label="View mode">
+      <button type="button" data-mode="deck" aria-pressed="true">Deck</button>
+      <button type="button" data-mode="story" aria-pressed="false">Story mode</button>
+      <button type="button" data-mode="cfo" aria-pressed="false">CFO view</button>
+    </div>
+    <div class="tools">
+      <button class="btn" id="bEdit" type="button" aria-expanded="false" aria-controls="drawer">Edit data</button>
+      <button class="btn" id="bMd" type="button">Copy as markdown</button>
+      <button class="btn pri" id="bPrint" type="button">Print / save PDF</button>
+      <button class="btn" id="bTheme" type="button" aria-pressed="false" title="Switch between warm paper and deep ink">Ink theme</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap chooser noprint">
+  <h2>Account data in. Executive-ready QBR out.</h2>
+  <p>Pick a sample account, import a CSV, or start blank. Everything is computed in your browser.</p>
+  <div class="cards" id="cards" role="group" aria-label="Choose an account"></div>
+</div>
+
+<main id="deck" aria-label="Quarterly business review deck">
+  <section class="slide cover" id="s-cover" aria-label="Cover"><div id="d-cover"></div></section>
+
+  <section class="slide" data-m="deck" id="s-health" aria-label="Health score">
+    <div id="d-health"></div>
+    <details class="how" id="how">
+      <summary>How the health score is computed</summary>
+      <div class="howbody">
+        <div>
+          <div class="live" aria-live="polite"><span class="big num" id="liveScore">0</span><span class="hint">live health score, moves as you change the weights</span></div>
+          <div id="sliders"></div>
+          <button class="btn sm noprint" type="button" id="wReset">Reset weights</button>
+        </div>
+        <div class="formula" id="d-formula"></div>
+      </div>
+    </details>
+  </section>
+  <section class="slide" data-m="deck" id="s-goals" aria-label="Value realized"><div id="d-goals"></div></section>
+  <section class="slide" data-m="deck" id="s-adopt" aria-label="Adoption"><div id="d-adopt"></div></section>
+  <section class="slide" data-m="deck" id="s-support" aria-label="Support and sentiment"><div id="d-support"></div></section>
+  <section class="slide" data-m="deck" id="s-wins" aria-label="Wins"><div id="d-wins"></div></section>
+  <section class="slide" data-m="deck" id="s-risks" aria-label="Risks"><div id="d-risks"></div></section>
+  <section class="slide" data-m="deck" id="s-renew" aria-label="Renewal risk"><div id="d-renew"></div></section>
+  <section class="slide" data-m="deck" id="s-asks" aria-label="Asks and next steps"><div id="d-asks"></div></section>
+
+  <section class="slide" data-m="story" id="s-story" aria-label="Talk track" hidden><div id="d-story"></div></section>
+
+  <section class="slide" data-m="cfo" id="s-cfo1" aria-label="Return on spend" hidden><div id="d-cfo1"></div></section>
+  <section class="slide" data-m="cfo" id="s-cfo2" aria-label="Exposure and upside" hidden><div id="d-cfo2"></div></section>
+  <section class="slide" data-m="cfo" id="s-cfo3" aria-label="Decisions" hidden><div id="d-cfo3"></div></section>
+</main>
+
+<footer class="pf">
+  <span>All sample accounts are fictional and simulated. Data you type or import never leaves this browser.</span>
+  <span>Built by <a href="https://www.linkedin.com/in/gustavo-freitas-69b93910b/">Gustavo Freitas</a></span>
+</footer>
+
+<aside class="drawer" id="drawer" role="dialog" aria-label="Edit account data" aria-hidden="true" inert>
+  <div class="dh"><h2>Account data</h2><button class="btn sm" type="button" id="dClose">Close</button></div>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabT" aria-selected="true" aria-controls="pT">Table</button>
+    <button type="button" role="tab" id="tabP" aria-selected="false" aria-controls="pP">CSV / JSON</button>
+  </div>
+  <div class="dbody" id="pT" role="tabpanel" aria-labelledby="tabT"></div>
+  <div class="dbody" id="pP" role="tabpanel" aria-labelledby="tabP" hidden>
+    <p class="hint">Paste CSV or JSON, or load a file, then Apply. The box below holds the current account in CSV so you can see the format. Lines starting with <b>#meta</b>, <b>#goal</b> and <b>#adopt</b> hold account details, stated goals and the team-by-feature adoption grid; plain rows are months.</p>
+    <textarea class="paste" id="pasteBox" spellcheck="false" aria-label="CSV or JSON data"></textarea>
+    <div class="err" id="pasteErr" role="alert"></div>
+    <div class="row">
+      <button class="btn pri" type="button" id="pApply">Apply</button>
+      <button class="btn" type="button" id="pCur">Show current as CSV</button>
+      <button class="btn" type="button" id="pJson">Show as JSON</button>
+      <label class="btn" tabindex="0" id="pFileL">Load file<input type="file" id="pFile" accept=".csv,.json,.txt,text/csv,application/json" class="sr"></label>
+      <button class="btn" type="button" id="pDl">Download CSV</button>
+    </div>
+  </div>
+</aside>
+
+<dialog id="mdDlg" aria-label="Markdown">
+  <p class="hint">Your browser blocked clipboard access. Select all and copy:</p>
+  <textarea id="mdBox" readonly aria-label="Markdown output"></textarea>
+  <div class="row"><button class="btn pri" type="button" id="mdClose">Done</button></div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ============ helpers ============ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=(v,d=0)=>{const x=parseFloat(v);return isFinite(x)?x:d};
+const clamp=(x,a=0,b=100)=>Math.min(b,Math.max(a,x));
+const sum=a=>a.reduce((s,x)=>s+x,0), avg=a=>a.length?sum(a)/a.length:0;
+const r0=Math.round, f1=x=>Math.round(x*10)/10;
+const fmt=(v,d=0)=>Number(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const money=n=>{const a=Math.abs(n),s=n<0?"-":"";return a>=1e6?s+"$"+f1(a/1e6)+"M":a>=1e4?s+"$"+r0(a/1e3)+"K":s+"$"+fmt(r0(a))};
+const MOTION=!matchMedia("(prefers-reduced-motion: reduce)").matches;
+if(MOTION)document.documentElement.classList.add("motion");
+const parseD=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s||"");return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null};
+const addDays=(d,n)=>new Date(d.getTime()+n*864e5);
+const fmtD=d=>d?`${d.getUTCDate()} ${MON[d.getUTCMonth()]} ${d.getUTCFullYear()}`:"not set";
+const monLab=m=>MON[(+m.slice(5,7)-1)||0]||m;
+const pl=(n,w)=>`${n} ${w}${n===1?"":"s"}`;
+const sgn=(v,d=0)=>(v>0?"+":v<0?"-":"")+fmt(Math.abs(v),d);
+
+/* ============ sample accounts (all fictional) ============ */
+const mk=(lic,act,op,cl,ttr,nps,csat,sp)=>["2026-04","2026-05","2026-06","2026-07","2026-08","2026-09"].map((month,i)=>({month,licensed:lic[i],active:act[i],opened:op[i],closed:cl[i],ttr:ttr[i],nps:nps[i],csat:csat[i],sponsor:sp[i]}));
+const rep=(v,n=6)=>Array(n).fill(v);
+const FEATS=["Workflow Builder","Dashboards","Approvals","Integrations","Scheduled Reports","Forecasting"];
+const SAMPLES={
+ thriving:{id:"thriving",fict:true,name:"Alder & Finch Logistics",plan:"Enterprise plan, 220 seats. Fictional freight and warehousing company.",preparedBy:"Customer Success",arr:240000,renewal:"2027-01-15",hoursPerSeat:7,hourlyCost:55,
+  months:mk(rep(220),[158,165,172,178,184,190],[41,38,36,33,31,29],[39,38,37,34,32,30],[22,20,18,16,14,13],[38,41,44,47,52,55],[88,89,90,91,92,93],[1,1,2,2,2,2]),
+  goals:[{label:"Cut weekly close-out time",unit:"hours",baseline:18,target:8,actual:9.5},{label:"Share of approvals handled automatically",unit:"%",baseline:20,target:70,actual:74},{label:"Report turnaround",unit:"days",baseline:5,target:1,actual:1.5},{label:"Teams live on the platform",unit:"teams",baseline:2,target:5,actual:5}],
+  teams:["Operations","Finance","Sales","Support","IT"],features:FEATS,
+  adoption:[[96,92,88,81,74,52],[84,90,93,66,88,61],[70,82,48,77,45,38],[78,64,70,86,32,22],[60,55,52,93,30,18]]},
+ atrisk:{id:"atrisk",fict:true,name:"Quillon Foods",plan:"Enterprise plan, 300 seats. Fictional food manufacturer.",preparedBy:"Customer Success",arr:310000,renewal:"2026-12-01",hoursPerSeat:3,hourlyCost:55,
+  months:mk(rep(300),[170,165,152,140,131,122],[52,55,61,66,72,78],[50,52,54,55,57,58],[28,31,35,39,44,51],[22,15,8,-2,-9,-14],[78,75,72,68,64,61],[2,1,1,0,0,0]),
+  goals:[{label:"Retire legacy spreadsheets",unit:"sheets",baseline:0,target:3,actual:1},{label:"Month-end close",unit:"days",baseline:9,target:5,actual:8},{label:"Manual re-keying",unit:"hrs/week",baseline:40,target:15,actual:34},{label:"Plants live on the platform",unit:"plants",baseline:0,target:6,actual:2}],
+  teams:["Plant Ops","Quality","Procurement","Finance","Logistics"],features:FEATS,
+  adoption:[[55,48,40,35,22,10],[60,44,38,50,20,12],[48,52,30,42,18,8],[62,58,45,40,35,15],[44,38,28,36,14,6]]},
+ expand:{id:"expand",fict:true,name:"Harborline Retail",plan:"Growth plan, 120 seats. Fictional regional retail group.",preparedBy:"Customer Success",arr:180000,renewal:"2027-02-28",hoursPerSeat:6,hourlyCost:55,
+  months:mk(rep(120),[96,102,108,112,115,118],[30,32,35,36,40,44],[29,31,34,36,41,45],[20,19,19,18,17,17],[31,33,36,39,41,44],[86,87,88,89,90,90],[1,1,1,2,2,2]),
+  goals:[{label:"Stores on the shared inventory dashboard",unit:"stores",baseline:12,target:40,actual:38},{label:"Weekly planning effort",unit:"hours",baseline:14,target:6,actual:6.8},{label:"Stockout alerts handled within an hour",unit:"%",baseline:40,target:90,actual:86},{label:"Regional teams onboarded",unit:"teams",baseline:1,target:4,actual:4}],
+  teams:["Merchandising","Stores","Supply Chain","Finance","E-commerce"],features:FEATS,
+  adoption:[[95,97,90,70,85,78],[88,92,76,82,60,55],[93,89,85,90,82,88],[70,86,72,64,90,80],[82,94,60,88,66,72]]}
+};
+const blankState=()=>({id:"blank",fict:false,name:"New account",plan:"",preparedBy:"Customer Success",arr:0,renewal:"",hoursPerSeat:5,hourlyCost:55,
+  months:["2026-07","2026-08","2026-09"].map(month=>({month,licensed:0,active:0,opened:0,closed:0,ttr:0,nps:0,csat:0,sponsor:0})),goals:[],teams:[],features:[],adoption:[]});
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ============ state ============ */
+const DEFW={adoption:35,support:25,sentiment:25,engagement:15};
+let S=clone(SAMPLES.thriving), W={...DEFW}, MODE="deck", M=null;
+
+/* ============ the model: every number is computed here ============ */
+function stats(ms){
+  if(!ms.length)return null;
+  const m=k=>avg(ms.map(x=>x[k])), lic=m("licensed"), act=m("active"), opened=sum(ms.map(x=>x.opened)), closed=sum(ms.map(x=>x.closed));
+  return {n:ms.length,lic,act,util:lic>0?clamp(act/lic*100):0,opened,closed,closure:opened>0?clamp(closed/opened*100):100,ttr:m("ttr"),nps:m("nps"),csat:m("csat"),spons:m("sponsor")};
+}
+function comps(s,feat){
+  const ttrScore=clamp((48-s.ttr)/44*100), npsScore=clamp((s.nps+100)/2);
+  return {adoption:feat==null?s.util:.6*s.util+.4*feat,support:.5*s.closure+.5*ttrScore,sentiment:.5*npsScore+.5*clamp(s.csat),engagement:clamp(s.spons/2*100),ttrScore,npsScore};
+}
+function weighted(c,w){
+  let t=w.adoption+w.support+w.sentiment+w.engagement, ww=w;
+  if(t<=0){ww={adoption:1,support:1,sentiment:1,engagement:1};t=4}
+  return (ww.adoption*c.adoption+ww.support*c.support+ww.sentiment*c.sentiment+ww.engagement*c.engagement)/t;
+}
+const bandOf=h=>h>=75?{k:"good",t:"Healthy"}:h>=55?{k:"warn",t:"Watch"}:{k:"bad",t:"At risk"};
+
+function compute(S,W){
+  const ms=S.months, n=ms.length, hasData=ms.some(m=>m.licensed>0);
+  const cur=stats(ms.slice(Math.max(0,n-3))), prev=n>3?stats(ms.slice(Math.max(0,n-6),n-3)):null;
+  const cells=S.adoption.flat().filter(v=>isFinite(v)), feat=cells.length?avg(cells):null;
+  const c=comps(cur,feat), health=weighted(c,W), pc=prev?comps(prev,feat):null, prevHealth=pc?weighted(pc,W):null;
+  const last=ms[n-1]?.month||"2026-09";
+  const asOf=new Date(Date.UTC(+last.slice(0,4),+last.slice(5,7),0));
+  const rd=parseD(S.renewal), days=rd?Math.round((rd-asOf)/864e5):null;
+  const quarter=`Q${Math.ceil((+last.slice(5,7)||1)/3)} ${last.slice(0,4)}`;
+  const tw=W.adoption+W.support+W.sentiment+W.engagement;
+  const share=k=>tw>0?W[k]/tw*100:25;
+  // goals
+  const goals=S.goals.map(g=>{
+    const span=g.target-g.baseline;
+    let p=span===0?(g.actual>=g.target?1:0):(g.actual-g.baseline)/span;
+    p=Math.max(0,p);
+    const st=p>=1?["Met","good"]:p>=.75?["On track","good"]:p>=.4?["Behind","warn"]:["Off track","bad"];
+    return {...g,p,pc:r0(p*100),status:st[0],sk:st[1]};
+  });
+  const goalsMet=goals.filter(g=>g.p>=1).length, avgGoal=goals.length?avg(goals.map(g=>Math.min(1,g.p)))*100:null;
+  // adoption lookups
+  const teamAvg=S.teams.map((t,i)=>({name:t,pct:avg(S.adoption[i]||[])}));
+  const featAvg=S.features.map((f,j)=>({name:f,pct:avg(S.adoption.map(r=>r[j]).filter(isFinite))}));
+  const topF=featAvg.length?[...featAvg].sort((a,b)=>b.pct-a.pct)[0]:null, lowF=featAvg.length?[...featAvg].sort((a,b)=>a.pct-b.pct)[0]:null;
+  const lowT=teamAvg.length?[...teamAvg].sort((a,b)=>a.pct-b.pct)[0]:null;
+  const utilD=prev?cur.util-prev.util:null, ttrD=prev&&prev.ttr>0?(cur.ttr-prev.ttr)/prev.ttr*100:null, npsD=prev?cur.nps-prev.nps:null, csatD=prev?cur.csat-prev.csat:null;
+  const M={S,W,hasData,cur,prev,c,health,prevHealth,band:bandOf(health),asOf,rd,days,quarter,share,goals,goalsMet,avgGoal,teamAvg,featAvg,topF,lowF,lowT,feat,utilD,ttrD,npsD,csatD};
+  M.risk=riskOf(M); M.wins=winsOf(M); M.risks=risksOf(M); M.asks=asksOf(M); M.fin=finOf(M);
+  M.tier=!hasData?"empty":M.risk.points>=50?"risk":health>=75&&cur.util>=90?"expand":health>=75?"thrive":"steady";
+  M.verdict=verdictOf(M); M.cfoVerdict=cfoVerdict(M);
+  return M;
+}
+
+function riskOf(M){
+  const {cur,prev,health,goals,avgGoal,days}=M, R=[], add=(p,t)=>{if(p>0)R.push({pts:p,text:t})};
+  add(Math.min(30,r0(Math.max(0,75-health)*.6)),`Health score ${r0(health)} sits below the healthy line of 75 (0.6 points per point of gap, max 30)`);
+  if(M.hasData&&cur.util<60)add(8,`Only ${r0(cur.util)}% of licensed seats are active (below 60%)`);
+  if(prev&&cur.util-prev.util<=-3)add(6,`Seat activity fell ${f1(prev.util-cur.util)} points versus the prior quarter`);
+  if(M.hasData&&cur.spons<1)add(8,`Executive sponsor engaged less than once a month (${f1(cur.spons)} per month)`);
+  if(M.hasData&&cur.nps<0)add(8,`NPS is negative (${r0(cur.nps)})`);
+  if(prev&&cur.nps-prev.nps<=-10)add(4,`NPS dropped ${r0(prev.nps-cur.nps)} points versus the prior quarter`);
+  if(cur.opened>0&&cur.closed<cur.opened*.92)add(6,`Ticket backlog is growing: ${cur.opened-cur.closed} more tickets opened than closed this quarter`);
+  if(prev&&prev.ttr>0&&cur.ttr>prev.ttr*1.25)add(4,`Time to resolution rose ${r0(M.ttrD)}% (${f1(prev.ttr)}h to ${f1(cur.ttr)}h)`);
+  if(goals.length&&avgGoal<50)add(12,`Customer's own goals are only ${r0(avgGoal)}% achieved on average (below 50%)`);
+  else if(goals.length&&avgGoal<75)add(6,`Customer's own goals are ${r0(avgGoal)}% achieved on average (below 75%)`);
+  const sub=sum(R.map(r=>r.pts));
+  if(days!=null&&days>=0&&days<=90&&sub>=15)add(6,`Renewal is ${days} days away, leaving little time to recover`);
+  const points=Math.min(100,sum(R.map(r=>r.pts)));
+  return {points,level:points<25?"Low":points<50?"Moderate":"High",k:points<25?"good":points<50?"warn":"bad",reasons:R.sort((a,b)=>b.pts-a.pts)};
+}
+
+function winsOf(M){
+  const {cur,prev,goals,topF}=M, C=[], P=(score,big,title,detail,short)=>C.push({score,big,title,detail,short});
+  if(M.hasData&&cur.util>=80)P(60+cur.util-80,r0(cur.util)+"%","Seats are in daily use",`${r0(cur.act)} of ${r0(cur.lic)} licensed seats were active on average last quarter.`,`${r0(cur.util)}% of seats are active`);
+  if(M.utilD!=null&&M.utilD>=4)P(50+M.utilD*2,"+"+f1(M.utilD)+" pts","Seat activity is climbing",`Active seat share rose from ${r0(prev.util)}% to ${r0(cur.util)}% quarter on quarter.`,`seat activity is up ${f1(M.utilD)} points`);
+  if(M.goalsMet>=1)P(55+M.goalsMet*10,`${M.goalsMet} of ${goals.length}`,"Customer goals achieved",`${goals.filter(g=>g.p>=1).map(g=>g.label).join("; ")}.`,`${M.goalsMet} of ${goals.length} stated goals are met`);
+  const best=[...goals].sort((a,b)=>b.p-a.p)[0];
+  if(best&&best.p>=.8&&best.p<1)P(50+best.p*20,best.pc+"%",best.label,`Moved from ${best.baseline} to ${best.actual} ${best.unit} against a target of ${best.target}.`,`${best.label.toLowerCase()} is ${best.pc}% of the way to target`);
+  if(M.ttrD!=null&&M.ttrD<=-15)P(50-M.ttrD*.6,r0(-M.ttrD)+"%","Faster resolution",`Average time to resolution fell from ${f1(prev.ttr)}h to ${f1(cur.ttr)}h.`,`resolution time is down ${r0(-M.ttrD)}%`);
+  if(M.hasData&&(cur.nps>=40||(M.npsD!=null&&M.npsD>=8)))P(45+Math.max(0,M.npsD||0)+cur.nps*.3,"NPS "+r0(cur.nps),"Sentiment is strong",M.npsD!=null?`NPS moved ${sgn(r0(M.npsD))} points on the prior quarter; CSAT is ${r0(cur.csat)}%.`:`CSAT is ${r0(cur.csat)}%.`,`NPS reached ${r0(cur.nps)}`);
+  if(topF&&topF.pct>=80)P(55+(topF.pct-80)/2,r0(topF.pct)+"%",`${topF.name} is embedded`,`Average adoption across all teams is ${r0(topF.pct)}%.`,`${topF.name} is embedded at ${r0(topF.pct)}%`);
+  if(M.hasData&&cur.spons>=2)P(42,f1(cur.spons)+"/mo","Executive sponsor is engaged",`About ${f1(cur.spons)} sponsor touchpoints a month last quarter.`,"the executive sponsor is engaged");
+  if(prev&&prev.opened>0&&cur.opened<=prev.opened*.9&&M.utilD>0)P(70,r0((1-cur.opened/prev.opened)*100)+"%","Fewer tickets as usage grew",`Tickets opened fell from ${prev.opened} to ${cur.opened} while active seats rose.`,"support volume fell while usage grew");
+  if(M.hasData&&cur.util>=92)P(65,"Capacity","Seats nearly full: a demand signal",`${r0(cur.util)}% utilisation means new users are queuing for seats.`,"seat capacity is nearly full");
+  if(M.hasData&&cur.closure>=100&&cur.opened>0)P(38,"100%","Every ticket closed",`${cur.closed} closed against ${cur.opened} opened.`,"all tickets were closed");
+  if(M.hasData&&cur.csat>=90)P(44,r0(cur.csat)+"%","Satisfaction above 90%",`CSAT averaged ${r0(cur.csat)}% over the quarter.`,`CSAT is ${r0(cur.csat)}%`);
+  if(M.topF&&M.topF.pct>=50&&M.topF.pct<80)P(30,r0(M.topF.pct)+"%",`${M.topF.name} is the strongest capability`,`Average adoption across teams is ${r0(M.topF.pct)}%, the best foothold to build on.`,`${M.topF.name} is the strongest capability at ${r0(M.topF.pct)}%`);
+  const bt=[...M.teamAvg].sort((a,b)=>b.pct-a.pct)[0];if(bt&&bt.pct>=50)P(28,r0(bt.pct)+"%",`${bt.name} leads adoption`,`Average adoption across features is ${r0(bt.pct)}%, a ready-made champion team.`,`${bt.name} is leading adoption at ${r0(bt.pct)}%`);
+  if(best&&best.p>=.25&&best.p<.8)P(26,best.pc+"%",`Closest goal: ${best.label}`,`Moved from ${best.baseline} to ${best.actual} ${best.unit}, target ${best.target}.`,`the closest goal, ${best.label.toLowerCase()}, is ${best.pc}% achieved`);
+  const fill=[["Live","Data is flowing","Monthly usage and outcomes are being tracked, which is the foundation for every conversation.","usage data is flowing"],["Baseline","A clear baseline exists","This quarter sets the baseline the next review will be measured against.","a clear baseline exists"],["Next","Room to grow","Every gap in the heatmap is a concrete enablement opportunity.","there is room to grow"]];
+  let i=0;while(C.length<3){const f=fill[i++];P(1,f[0],f[1],f[2],f[3])}
+  const seen=new Set();return C.sort((a,b)=>b.score-a.score).filter(c=>!seen.has(c.title)&&seen.add(c.title)).slice(0,3);
+}
+
+function risksOf(M){
+  const {cur,prev,goals,days,asOf}=M, C=[], P=(sev,title,detail,short,owner,action)=>C.push({sev,title,detail,short,owner,action,due:addDays(asOf,sev>=70?14:sev>=50?21:30)});
+  const worstG=[...goals].sort((a,b)=>a.p-b.p)[0];
+  if(M.hasData&&cur.util<60)P(60+(60-cur.util),`Only ${r0(cur.util)}% of seats are active`,`${r0(cur.lic-cur.act)} of ${r0(cur.lic)} seats sit idle, which is the first thing a finance reviewer will see.`,`seat use has slid to ${r0(cur.util)}%`,"CSM","Run a seat-activation sprint on the lowest-adoption teams and reclaim or redeploy idle licences.");
+  if(M.utilD!=null&&M.utilD<=-3)P(45+Math.abs(M.utilD)*3,`Seat activity fell ${f1(-M.utilD)} points`,`Active share moved from ${r0(prev.util)}% to ${r0(cur.util)}% quarter on quarter.`,`seat activity fell ${f1(-M.utilD)} points`,"CSM","Interview three churned users and publish the top blocker with a fix date.");
+  if(M.hasData&&cur.spons<1)P(72,"The executive sponsor has gone quiet",`Only ${f1(cur.spons)} sponsor touchpoints a month last quarter.`,"the executive sponsor has gone quiet","Our exec sponsor","Request a 45-minute executive reset and bring a recovery plan.");
+  if(M.hasData&&(cur.nps<0||(M.npsD!=null&&M.npsD<=-8)))P(55+Math.max(0,-cur.nps)*.8+Math.max(0,-(M.npsD||0)),`NPS is ${r0(cur.nps)}${M.npsD!=null?` (${sgn(r0(M.npsD))} on the quarter)`:""}`,`CSAT is ${r0(cur.csat)}%. Detractors are the leading indicator for renewal.`,`NPS is ${r0(cur.nps)}`,"CSM","Call every detractor within ten days and log root causes.");
+  if(M.hasData&&(cur.ttr>36||(M.ttrD!=null&&M.ttrD>=20)))P(40+Math.min(40,cur.ttr-20),`Time to resolution is ${f1(cur.ttr)} hours`,M.ttrD!=null?`Up ${r0(M.ttrD)}% on the prior quarter.`:"Above the 24 hour comfort level.",`resolution time is ${r0(cur.ttr)} hours`,"Support lead","Assign a named support engineer and clear the aged tickets this month.");
+  if(cur.opened>0&&cur.closed<cur.opened*.92)P(48+(cur.opened-cur.closed)/2,`Ticket backlog grew by ${cur.opened-cur.closed}`,`${cur.opened} opened versus ${cur.closed} closed in the quarter.`,"the ticket backlog is growing","Support lead","Triage the backlog by account impact and agree a burn-down date.");
+  if(worstG&&worstG.p<.5)P(50+(.5-worstG.p)*60,`Goal at risk: ${worstG.label}`,`Only ${worstG.pc}% of the way from ${worstG.baseline} to a target of ${worstG.target} ${worstG.unit}.`,`"${worstG.label.toLowerCase()}" is only ${worstG.pc}% achieved`,"CSM + customer champion","Re-scope the goal, agree the two blockers, and set a 30 day checkpoint.");
+  if(M.lowF&&M.lowF.pct<35)P(44+(35-M.lowF.pct),`${M.lowF.name} is under-used (${r0(M.lowF.pct)}%)`,"Low depth means the customer may not see the full value they are paying for.",`${M.lowF.name} is under-used`,"Solutions engineer","Run a hands-on enablement session for the two most relevant teams.");
+  if(M.hasData&&cur.util>=95)P(46,"Seat ceiling reached","At 95%+ utilisation new joiners cannot get a seat, which stalls adoption.","the seat ceiling is blocking new users","CSM","Size an expansion with the sponsor before the ceiling blocks rollout.");
+  if(days!=null&&days>=0&&days<=90&&M.risk.points>=25)P(58,`Renewal in ${days} days`,"Moderate or high risk this close to renewal needs an agreed path.",`renewal is ${days} days away`,"CSM + account executive","Hold a renewal-readiness call and confirm the decision makers.");
+  const fill=[];
+  if(M.lowT)fill.push([20,`Lowest-adoption team: ${M.lowT.name} (${r0(M.lowT.pct)}%)`,"The largest gap in the heatmap, and the cheapest place to win depth.",`${M.lowT.name} lags at ${r0(M.lowT.pct)}%`,"Customer champion","Nominate a champion and run a 30 minute team clinic."]);
+  if(M.lowF&&M.lowF.pct>=35)fill.push([18,`Weakest feature: ${M.lowF.name} (${r0(M.lowF.pct)}%)`,"Potential value not yet captured by the customer.",`${M.lowF.name} is the weakest feature`,"Solutions engineer","Share two customer-ready use cases and a how-to."]);
+  fill.push([14,"Renewal prep: confirm the decision makers","Renewals slip when the buyer changes. Verify who signs and what they need to see.","the buying group needs confirming","CSM","Map the buying group and book a preview of this review."]);
+  fill.push([12,"Keep the sponsor cadence","Momentum depends on a steady executive rhythm.","sponsor cadence needs to hold","Our exec sponsor","Book the next two quarterly touchpoints now."]);
+  fill.push([10,"Refresh stated goals","Goals go stale; a refreshed target keeps the value story current.","stated goals need refreshing","CSM","Agree next quarter's targets with the customer champion."]);
+  fill.forEach(f=>P(...f));
+  return C.sort((a,b)=>b.sev-a.sev).slice(0,3).map((r,i)=>({...r,rank:i+1,sevK:r.sev>=70?"sev-hi":r.sev<40?"sev-lo":""}));
+}
+
+function seatPlan(M){
+  const ms=M.S.months, n=ms.length, last=ms[n-1]?.active||0, slope=n>1?Math.max(0,(last-ms[0].active)/(n-1)):0;
+  const proj=Math.ceil(last+slope*6), rec=Math.ceil(proj/.9/5)*5, add=Math.max(0,rec-(ms[n-1]?.licensed||0));
+  return {last,slope,proj,rec,add};
+}
+function asksOf(M){
+  const {cur,asOf,days,S}=M, A=[], due=d=>addDays(asOf,d), Pk=(p,ask,why,owner,d,fin)=>A.push({p,ask,why,owner,date:due(d),fin});
+  const sp=seatPlan(M), price=cur.lic>0?S.arr/cur.lic:0;
+  if(M.risk.points>=50){
+    Pk(1,"Agree a 30-day recovery plan with a named customer owner",`Risk is ${M.risk.level.toLowerCase()} (${M.risk.points}/100) with ${M.risk.reasons.length} contributing factors.`,"Customer exec sponsor",14,`Protects ${money(S.arr*M.risk.points/100)} of exposed ARR`);
+    Pk(2,"Hold a 45-minute executive reset call","Sponsor contact has lapsed; a senior conversation restores the decision path.","Our exec sponsor",10,"Rebuilds the renewal decision path");
+    if(M.lowT)Pk(3,`Name a champion in ${M.lowT.name}`,`${M.lowT.name} averages ${r0(M.lowT.pct)}% adoption, the lowest of any team.`,"Customer champion",21,"Raises utilisation, shrinks idle spend");
+  }
+  if(cur.util>=90&&sp.add>0)Pk(2,`Approve +${sp.add} seats (to ${sp.rec} total)`,`${r0(cur.util)}% of seats are active; ${sp.proj} active seats projected in 6 months (${sp.last} now, +${f1(sp.slope)} a month), sized for 90% peak use.`,"Customer exec sponsor",30,`+${money(sp.add*price)} ARR at today's per-seat price`);
+  if(cur.opened>0&&cur.closed<cur.opened*.92)Pk(3,"Prioritise the aged ticket backlog","More tickets are being opened than closed; clearing the oldest builds trust fast.","Support lead",14,"Lowers support friction score");
+  if(M.risk.points<50&&cur.spons<1.5)Pk(4,"Re-establish a monthly executive sponsor cadence",`Sponsor touchpoints average ${f1(cur.spons)} a month, below the 2 a month target.`,"Customer exec sponsor",14,"Supports the renewal decision");
+  if(M.lowF&&M.lowF.pct<50&&M.risk.points<50)Pk(4,`Run an enablement sprint for ${M.lowF.name}`,`It averages ${r0(M.lowF.pct)}% across teams, the weakest capability.`,"Solutions engineer",30,"Captures unused value");
+  if(M.risk.points<25&&days!=null&&days>=0&&days<=150)Pk(3,"Open the renewal conversation early and propose a multi-year term",`Renewal is ${days} days out and the account scores ${r0(M.health)}.`,"CSM + account executive",21,`Secures ${money(S.arr)} ARR`);
+  if(M.risk.points<25)Pk(5,"Co-author a customer success story","Strong, measured outcomes make a credible reference.","Customer champion",45,"Reference value");
+  Pk(8,"Confirm the renewal path and decision makers","Agree who signs, when, and what evidence they need.","CSM",days!=null&&days>0?Math.min(30,Math.max(7,days-30)):30,"Renewal clarity");
+  Pk(9,"Schedule the next QBR and refresh the goals","Keeps the value story current and the cadence predictable.","CSM",60,"Cadence");
+  Pk(10,"Share this review with the executive sponsor in advance","No surprises in the room.","CSM",7,"Alignment");
+  const seen=new Set();return A.sort((a,b)=>a.p-b.p).filter(a=>!seen.has(a.ask)&&seen.add(a.ask)).slice(0,4);
+}
+
+function finOf(M){
+  const {cur,S}=M, arr=S.arr, q=arr/4, hours=cur.act*S.hoursPerSeat*3, value=hours*S.hourlyCost;
+  const idle=arr*(1-cur.util/100), exposure=arr*M.risk.points/100, sp=seatPlan(M), price=cur.lic>0?arr/cur.lic:0;
+  return {arr,q,hours,value,roi:q>0?value/q:0,perActive:cur.act>0?arr/12/cur.act:0,idle,exposure,sp,price,expansion:cur.util>=90?sp.add*price:0,usedSpend:arr*cur.util/100};
+}
+
+function verdictOf(M){
+  const {cur,goals}=M, g=goals.length?`${M.goalsMet} of ${goals.length} goals met`:"goals still to capture", rd=M.days!=null?`renewal in ${M.days} days`:"renewal date not set";
+  switch(M.tier){
+    case"empty":return "Add monthly usage data to generate a verdict for this account.";
+    case"risk":{const [a,b]=M.risks;return `At risk: ${a.short} and ${b.short}, with ${rd}.`}
+    case"expand":return `Ready to expand: ${r0(cur.util)}% of seats are in use, ${g}, and capacity is nearly full.`;
+    case"thrive":return `Thriving: ${r0(cur.util)}% of seats in use, ${g}, and NPS ${M.npsD!=null&&M.npsD>=0?"up to":"at"} ${r0(cur.nps)}.`;
+    default:return `Steady, with room to grow: health ${r0(M.health)} and ${M.risks[0].short}.`;
+  }
+}
+function cfoVerdict(M){
+  if(M.tier==="empty")return "Add monthly usage data to see cost, time saved and risk.";
+  const f=M.fin;return `An estimated ${f1(f.roi)}x return on this quarter's spend, ${money(f.idle)} a year in idle seats, and ${f.exposure<1?"no ARR flagged as exposed":money(f.exposure)+" of ARR exposed"} at renewal.`.replace("no ARR flagged as exposed at renewal","no ARR flagged as exposed at renewal");
+}
+
+/* ============ talk track (templates + rules, no AI) ============ */
+function storyOf(M){
+  const {cur,goals,S}=M, nm=S.name, sp=M.tier==="empty";
+  const utilD=M.utilD==null||Math.abs(M.utilD)<1?"":M.utilD>0?`, up ${r0(M.utilD)} points on the quarter before`:`, down ${r0(-M.utilD)} points on the quarter before`;
+  const ttrD=M.ttrD==null||Math.abs(M.ttrD)<5?"":M.ttrD<0?`, ${r0(-M.ttrD)} percent faster than before`:`, ${r0(M.ttrD)} percent slower than before`;
+  const npsD=M.npsD==null||Math.abs(M.npsD)<2?"":M.npsD>0?`, up ${r0(M.npsD)}`:`, down ${r0(-M.npsD)}`;
+  const bandWord=M.band.k==="good"?"healthy":M.band.k==="warn"?"worth watching":"at risk";
+  const best=[...goals].sort((a,b)=>b.p-a.p)[0], worst=[...goals].sort((a,b)=>a.p-b.p)[0];
+  const goalLine=!goals.length?"We have not captured your stated goals yet, so that is our first action.":
+    `Against your own goals, ${M.goalsMet} of ${goals.length} are met, ${r0(M.avgGoal)} percent of the way there on average. Furthest to go: ${(goals.length>1?worst:best).label.toLowerCase()}.`;
+  const featLine=M.topF?` Strongest feature: ${M.topF.name}, ${r0(M.topF.pct)} percent. Biggest gap: ${M.lowF.name}, ${r0(M.lowF.pct)} percent.`:"";
+  const w=M.wins, r=M.risks[0], a=M.asks[0];
+  const close={risk:"I would like us to agree a recovery plan today.",expand:"Let us size the expansion together this month.",thrive:"Let us lock in the next year while momentum is high.",steady:"Let us agree the top fixes and review them next month.",empty:"Let us start by capturing your data."}[M.tier];
+  const days=M.days!=null?`Renewal is ${M.days} days away`:"The renewal date is still to be confirmed";
+  const beats=sp?[{t:"Opening",x:"There is no usage data for this account yet. Add the monthly numbers in the data panel and the talk track will write itself."}]:[
+   {t:"Headline",x:`${M.verdict} Health score: ${r0(M.health)} out of 100, ${bandWord}.`},
+   {t:"Adoption",x:`${cur.act>=1?`${r0(cur.act)} of ${r0(cur.lic)} seats were active, ${r0(cur.util)} percent${utilD}.`:"Seat activity is still at zero."}${featLine}`},
+   {t:"Value against your goals",x:goalLine},
+   {t:"Support and sentiment",x:`Support closed ${cur.closed} tickets against ${cur.opened} opened, resolving in ${f1(cur.ttr)} hours${ttrD}. NPS is ${r0(cur.nps)}${npsD}; satisfaction ${r0(cur.csat)} percent.`},
+   {t:"Wins and risks",x:`Wins: ${w[0].short}; ${w[1].short}. Main risk: ${r.short}. Suggested owner ${r.owner}, by ${fmtD(r.due)}.`},
+   {t:"Ask and renewal",x:`Our ask: ${a.ask.charAt(0).toLowerCase()+a.ask.slice(1)}. ${days}; risk is ${M.risk.level.toLowerCase()}. ${close}`}];
+  const words=beats.map(b=>b.x.split(/\s+/).filter(Boolean).length), total=sum(words), secs=Math.round(total/2.6);
+  let t=0;beats.forEach((b,i)=>{b.at=Math.round(t*secs/Math.max(1,total));b.words=words[i];t+=words[i]});
+  return {beats,words:total,secs};
+}
+
+/* ============ rendering ============ */
+const N=(v,o={})=>{const d=o.d||0,pre=o.pre||"",suf=o.suf||"";return `<span class="num" data-to="${v}" data-dec="${d}" data-pre="${pre}" data-suf="${suf}">${pre}${fmt(v,d)}${suf}</span>`};
+const ring=(p,sw,cls="")=>{const r=50-sw/2;return `<svg class="ring ${cls}" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="${r}" stroke-width="${sw}"/><circle class="arc" cx="50" cy="50" r="${r}" stroke-width="${sw}" pathLength="100" style="--p:${clamp(p,0,1)}" transform="rotate(-90 50 50)"/></svg>`};
+const bar=(p,cls="")=>`<div class="bar" role="presentation"><div class="fill ${cls}" style="--w:${clamp(p,0,100)}%"></div></div>`;
+const dlt=(v,d=0,inv=false,unit="")=>v==null?"":`<span class="${(v>0)!==inv&&Math.abs(v)>=.5?"up":Math.abs(v)<.5?"":"dn"}">${v>0?"&#9650;":v<0?"&#9660;":"&#9644;"} ${fmt(Math.abs(v),d)}${unit}</span>`;
+const foot=(M)=>`<div class="sfoot"><span>${esc(M.S.name)} &middot; QBR ${esc(M.quarter)}</span><span>${M.S.fict?"Simulated account, fictional data":"Prepared with QBR Studio"}</span></div>`;
+const head=(eyebrow,title,lede)=>`<div class="eyebrow">${eyebrow}</div><h2>${title}</h2>${lede?`<p class="lede">${lede}</p>`:""}`;
+
+function rCover(M){
+  const f=M.fin, cfo=MODE==="cfo", story=MODE==="story";
+  const kp=cfo?[["Annual contract",money(f.arr),`${money(f.q)} per quarter`],["Value this quarter",money(f.value),`${fmt(r0(f.hours))} hours saved`],["Return on spend",f1(f.roi)+"x",`${money(f.perActive)} per active seat a month`],["ARR exposed",money(f.exposure),`risk ${M.risk.points} of 100`]]
+   :[["Annual recurring revenue",money(M.S.arr),M.S.plan.split(".")[0]||"&nbsp;"],["Renewal",M.days!=null?`${M.days} days`:"Not set",fmtD(M.rd)],["Seats active",`${r0(M.cur.util)}%`,`${r0(M.cur.act)} of ${r0(M.cur.lic)}`],["Renewal risk",`${M.risk.level}`,`${M.risk.points} of 100`]];
+  return `<div class="cgrid"><div>
+    <div class="eyebrow">Quarterly Business Review &middot; ${esc(M.quarter)}${story?" &middot; Story mode":cfo?" &middot; CFO view":""}</div>
+    <p class="acct">${esc(M.S.name)}</p>
+    <h1 class="verdict">${esc(cfo?M.cfoVerdict:M.verdict)}</h1>
+    <p style="margin:18px 0 0"><span class="fict">${M.S.fict?"Simulated account &middot; fictional data":"Your data &middot; processed locally in this browser"}</span></p>
+   </div>
+   <div class="hring" role="img" aria-label="Health score ${r0(M.health)} out of 100, ${M.band.t}">${ring(M.health/100,7,M.band.k)}
+     <div class="in-num"><div class="big">${N(r0(M.health))}</div><div class="hint">health score</div><span class="band ${M.band.k}">${M.band.t}</span>${M.prevHealth!=null?`<div class="delta">${dlt(M.health-M.prevHealth,0)} vs prior quarter</div>`:""}</div></div></div>
+   <div class="kpis">${kp.map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join("")}</div>`;
+}
+function rHealth(M){
+  const c=M.c, p=M.prev, rows=[
+   ["Adoption","adoption",`${r0(M.cur.util)}% of seats active`+(M.feat!=null?` &middot; ${r0(M.feat)}% average feature depth`:" &middot; no feature grid yet"),p?c.adoption-comps(p,M.feat).adoption:null],
+   ["Support friction","support",`${r0(M.cur.closure)}% of tickets closed &middot; ${f1(M.cur.ttr)}h to resolve`,p?c.support-comps(p,M.feat).support:null],
+   ["Sentiment","sentiment",`NPS ${r0(M.cur.nps)} &middot; CSAT ${r0(M.cur.csat)}%`,p?c.sentiment-comps(p,M.feat).sentiment:null],
+   ["Exec engagement","engagement",`${f1(M.cur.spons)} sponsor touchpoints a month (target 2)`,p?c.engagement-comps(p,M.feat).engagement:null]];
+  const k=s=>bandOf(s).k;
+  return head("Account health","How healthy is the account?",`Four signals, weighted into one score out of 100. The score is <b>${r0(M.health)}</b> (${M.band.t.toLowerCase()}). Open the panel below to change the weights.`)+
+   `<div class="comps">${rows.map(r=>`<div class="comp"><div class="nm">${r[0]}<div class="hint">weight ${r0(M.share(r[1]))}%</div></div>${bar(c[r[1]],k(c[r[1]]))}<div class="sc">${N(r0(c[r[1]]))}<small>${r[3]!=null?dlt(r[3],0)+" vs prior":""}</small></div><div class="sub">${r[2]}</div></div>`).join("")}</div>`+foot(M);
+}
+function rFormula(M){
+  const c=M.c, w=M.W, tw=w.adoption+w.support+w.sentiment+w.engagement, wv=k=>tw>0?r0(w[k]/tw*100):25;
+  return `<p><b>Health</b> = weighted average of four 0 to 100 scores.</p>
+   <p><code>(${wv("adoption")}&times;${r0(c.adoption)} + ${wv("support")}&times;${r0(c.support)} + ${wv("sentiment")}&times;${r0(c.sentiment)} + ${wv("engagement")}&times;${r0(c.engagement)}) &divide; 100 = ${f1(M.health)}</code></p>
+   <ul>
+    <li><b>Adoption</b> = 60% seat utilisation (active &divide; licensed) + 40% average feature adoption across the team grid. Last quarter: ${f1(M.cur.util)}%${M.feat!=null?` and ${f1(M.feat)}%`:", no grid, so utilisation only"}.</li>
+    <li><b>Support friction</b> = half ticket closure rate (closed &divide; opened, max 100%) + half resolution speed, where 4h scores 100 and 48h scores 0. Now ${f1(M.cur.closure)}% and ${f1(M.cur.ttr)}h (${r0(c.ttrScore)}).</li>
+    <li><b>Sentiment</b> = half NPS rescaled (NPS+100)&divide;2 + half CSAT. NPS ${r0(M.cur.nps)} becomes ${r0(c.npsScore)}; CSAT ${r0(M.cur.csat)}.</li>
+    <li><b>Engagement</b> = executive sponsor touchpoints a month &divide; 2, capped at 100. Now ${f1(M.cur.spons)}.</li>
+   </ul><p>All inputs are the average of the last three months. Bands: 75 and up healthy, 55 to 74 watch, below 55 at risk.</p>`;
+}
+function rGoals(M){
+  const g=M.goals;
+  if(!g.length)return head("Value realized","Value realized against the customer's own goals","")+`<div class="empty">No goals yet. Add the goals the customer stated, with a starting point and a target, in Edit data.</div>`+foot(M);
+  return head("Value realized","Value realized against the customer's own goals",`Progress = (actual &minus; starting point) &divide; (target &minus; starting point). Works for goals that go up or down.`)+
+   `<div class="summ"><div><div class="v">${N(M.goalsMet)} <span class="hint">of ${g.length}</span></div><div class="l">goals met</div></div><div><div class="v">${N(r0(M.avgGoal),{suf:"%"})}</div><div class="l">average progress to target (each goal capped at 100%)</div></div></div>
+   <div class="goals">${g.map(x=>`<div class="goal"><div class="gr" role="img" aria-label="${esc(x.label)}: ${x.pc}% of target">${ring(Math.min(1,x.p),9,x.sk)}<div class="c">${N(x.pc,{suf:"%"})}</div></div><div><h3>${esc(x.label)}</h3><p>${fmt(x.baseline,x.baseline%1?1:0)} &rarr; <b>${fmt(x.actual,x.actual%1?1:0)}</b> ${esc(x.unit)} <br>target ${fmt(x.target,x.target%1?1:0)}</p><span class="tag ${x.sk}">${x.status}</span></div></div>`).join("")}</div>`+foot(M);
+}
+function ramp(t){
+  const st=[[0,[239,231,217]],[.45,[170,184,255]],[.75,[43,63,214]],[1,[20,30,120]]];t=clamp(t,0,1);
+  for(let i=1;i<st.length;i++)if(t<=st[i][0]){const a=st[i-1],b=st[i],u=(t-a[0])/(b[0]-a[0]);return a[1].map((v,j)=>Math.round(v+(b[1][j]-v)*u))}
+  return st[3][1];
+}
+const lum=c=>{const f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(c[0])+.7152*f(c[1])+.0722*f(c[2])};
+function rAdopt(M){
+  const ms=M.S.months, heat=M.S.teams.length&&M.S.features.length;
+  const table=heat?`<div class="hwrap"><table class="heat" aria-label="Adoption heatmap by team and feature, percent"><thead><tr><th></th>${M.S.features.map(f=>`<th scope="col">${esc(f)}</th>`).join("")}<th scope="col">Avg</th></tr></thead><tbody>${M.S.teams.map((t,i)=>`<tr><th scope="row">${esc(t)}</th>${M.S.features.map((f,j)=>{const v=M.S.adoption[i][j],c=ramp(v/100),tc=lum(c)>.3?"#1b1a17":"#fff";return `<td style="background:rgb(${c});color:${tc}">${r0(v)}</td>`}).join("")}<td class="avg">${r0(M.teamAvg[i].pct)}</td></tr>`).join("")}<tr><th scope="row" style="color:var(--mut)">Avg</th>${M.featAvg.map(f=>`<td class="avg">${r0(f.pct)}</td>`).join("")}<td class="avg"><b>${r0(M.feat)}</b></td></tr></tbody></table></div><div class="hleg">0%<i></i>100% of team members using the feature</div>`:`<div class="empty">No team-by-feature grid yet. Add teams and features in Edit data to see the heatmap.</div>`;
+  return head("Adoption","Who uses what",`${r0(M.cur.util)}% of licensed seats active last quarter${M.utilD!=null?`, ${M.utilD>=0?"up":"down"} ${f1(Math.abs(M.utilD))} points`:""}.`)+
+   `<div class="two"><div class="panel"><h3>Seats: licensed vs active, by month</h3><div class="chart" data-chart="seats"></div><div class="legend"><span><i style="background:var(--acc)"></i>Active seats</span><span><i style="background:var(--mut)"></i>Licensed seats</span></div></div>
+   <div class="panel"><h3>Adoption heatmap: team by feature (% of members)</h3>${table}</div></div>`+foot(M);
+}
+function spark(vals,color){
+  if(vals.length<2)return "";const w=150,h=34,mx=Math.max(...vals),mn=Math.min(...vals),rg=mx-mn||1;
+  const pts=vals.map((v,i)=>[i/(vals.length-1)*(w-6)+3,h-4-(v-mn)/rg*(h-10)]);
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ")}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="3.2" fill="${color}"/></svg>`;
+}
+function rSupport(M){
+  const ms=M.S.months, c=M.cur;
+  const cards=[["Time to resolution",f1(c.ttr)+"h",dlt(M.ttrD==null?null:M.ttrD,0,true,"%")+" vs prior",spark(ms.map(m=>m.ttr),"var(--acc)")],
+   ["NPS",r0(c.nps),dlt(M.npsD,0)+" pts vs prior",spark(ms.map(m=>m.nps),"var(--acc)")],
+   ["CSAT",r0(c.csat)+"%",dlt(M.csatD,0)+" pts vs prior",spark(ms.map(m=>m.csat),"var(--acc)")],
+   ["Exec sponsor touchpoints",f1(c.spons)+"/mo","target 2 a month",spark(ms.map(m=>m.sponsor),"var(--acc)")]];
+  return head("Support and sentiment","How the experience feels",`${c.opened} tickets opened and ${c.closed} closed last quarter (${r0(c.closure)}% closure).`)+
+   `<div class="two"><div class="panel"><h3>Tickets opened vs closed, by month</h3><div class="chart" data-chart="tickets"></div><div class="legend"><span><i style="background:var(--acc)"></i>Closed</span><span><i style="background:var(--mut);opacity:.55"></i>Opened</span></div></div>
+   <div class="cards2">${cards.map(k=>`<div class="mc"><div class="l">${k[0]}</div><div class="v num">${k[1]}</div><div class="d">${k[2]}</div>${k[3]}</div>`).join("")}</div></div>`+foot(M);
+}
+function rWins(M){
+  return head("Wins","Three wins to celebrate","Ranked by size of the signal in the data.")+`<div class="three">${M.wins.map(w=>`<div class="win"><div class="big">${esc(w.big)}</div><h3>${esc(w.title)}</h3><p>${esc(w.detail)}</p></div>`).join("")}</div>`+foot(M);
+}
+function rRisks(M){
+  return head("Risks","Three risks, each with an owner and a date","Ranked by severity. Dates run from the end of the reporting period.")+
+   M.risks.map(r=>`<div class="risk ${r.sevK}"><div><h3>${esc(r.title)}</h3><p>${esc(r.detail)}</p></div><div class="own">Suggested owner<b>${esc(r.owner)}</b>by <b style="display:inline">${fmtD(r.due)}</b></div><div class="act"><b>Next step:</b> ${esc(r.action)}</div></div>`).join("")+foot(M);
+}
+function meter(M){
+  return `<div class="mhead"><div class="big">${N(M.risk.points)}</div><div><span class="band ${M.risk.k}">${M.risk.level} risk</span><div class="hint">out of 100 &middot; ${M.days!=null?`renewal ${fmtD(M.rd)} (${M.days} days)`:"renewal date not set"}</div></div></div>
+   <div class="meter"><div class="mwrap" role="img" aria-label="Renewal risk ${M.risk.points} of 100, ${M.risk.level}"><div class="mtrack"><span></span><span></span><span></span></div><div class="mark" style="--p:${M.risk.points}"></div></div><div class="mlab"><span>Low 0-24</span><span>Moderate 25-49</span><span>High 50-100</span></div></div>`;
+}
+function reasonsHTML(M){
+  return M.risk.reasons.length?`<ul class="reasons">${M.risk.reasons.map(r=>`<li><span class="pts">+${r.pts}</span><span>${esc(r.text)}</span></li>`).join("")}</ul>`:`<div class="empty">No risk factors triggered. Every rule checks out.</div>`;
+}
+function rRenew(M){
+  return head("Renewal risk","Where renewal stands","Points add up from transparent rules; each reason below shows what it added.")+`<div class="two"><div>${meter(M)}<div class="cards2"><div class="mc"><div class="l">ARR at stake</div><div class="v">${money(M.S.arr)}</div><div class="d">${money(M.fin.exposure)} weighted by the risk score</div></div><div class="mc"><div class="l">Time to renewal</div><div class="v">${M.days!=null?M.days+" days":"Not set"}</div><div class="d">${fmtD(M.rd)}</div></div></div></div><div><h3 style="margin:0 0 10px;font:600 .95rem var(--sans)">Why this number</h3>${reasonsHTML(M)}</div></div>`+foot(M);
+}
+function rAsks(M){
+  return head("Asks and next steps","What we need to make next quarter great","Every ask has a reason in the data, an owner and a date.")+
+   `<table class="asks"><thead><tr><th>Ask</th><th>Why</th><th>Owner</th><th>By</th></tr></thead><tbody>${M.asks.map(a=>`<tr><td>${esc(a.ask)}</td><td class="why">${esc(a.why)}</td><td>${esc(a.owner)}</td><td class="when">${fmtD(a.date)}</td></tr>`).join("")}</tbody></table>`+foot(M);
+}
+function rStory(M){
+  const T=storyOf(M);
+  return head("Story mode","The 60-second talk track","The same facts as the deck, written in plain language by templates and rules. No AI service involved.")+
+   `<div class="sbar"><span><b>${T.words}</b> words &middot; about <b>${T.secs}</b> seconds read aloud</span><button class="btn sm noprint" type="button" id="bRehearse">Rehearse with timer</button></div><div class="beats" id="beats">${T.beats.map((b,i)=>`<div class="beat" data-i="${i}" data-at="${b.at}"><div class="ts">0:${String(b.at).padStart(2,"0")}</div><div><div class="tt">${esc(b.t)}</div><p>${esc(b.x)}</p></div></div>`).join("")}</div>`+foot(M);
+}
+function rCfo1(M){
+  const f=M.fin, used=M.cur.util;
+  return head("CFO view","Return on spend",`The same data reframed as cost and time. Value = active seats &times; hours saved per seat a month &times; 3 months &times; hourly cost.`)+
+   `<div class="cfo-cards"><div class="mc"><div class="l">Quarterly spend</div><div class="v">${money(f.q)}</div><div class="d">ARR ${money(f.arr)} &divide; 4</div></div>
+   <div class="mc"><div class="l">Time saved</div><div class="v">${fmt(r0(f.hours))}h</div><div class="d">${r0(M.cur.act)} active seats &times; ${M.S.hoursPerSeat}h &times; 3 months</div></div>
+   <div class="mc"><div class="l">Value of that time</div><div class="v">${money(f.value)}</div><div class="d">at ${money(M.S.hourlyCost)} loaded cost an hour</div></div>
+   <div class="mc"><div class="l">Return on spend</div><div class="v">${f1(f.roi)}x</div><div class="d">value &divide; spend; cost per active seat ${money(f.perActive)}/mo</div></div></div>
+   <div class="panel"><h3>Where the annual contract goes</h3><div class="stack" role="img" aria-label="${r0(used)}% of spend on active seats, ${r0(100-used)}% idle"><div class="u" style="flex:${Math.max(used,.001)}">${r0(used)}% in active use (${money(f.usedSpend)})</div><div class="i" style="flex:${Math.max(100-used,.001)}">${r0(100-used)}% idle (${money(f.idle)})</div></div><div class="hint">Assumes price is spread evenly across licensed seats.</div></div>
+   <p class="assume"><b>Assumptions</b> (editable in Edit data): ${M.S.hoursPerSeat} hours saved per active seat per month, validated with the customer; ${money(M.S.hourlyCost)} loaded cost per hour. Estimates, not audited savings.</p>`+foot(M);
+}
+function rCfo2(M){
+  const f=M.fin;
+  return head("CFO view","Exposure and upside","Risk expressed in dollars, so the trade-offs are visible.")+
+   `<div class="two"><div>${meter(M)}<div class="cfo-cards" style="grid-template-columns:1fr 1fr;margin:0"><div class="mc"><div class="l">ARR exposed</div><div class="v">${money(f.exposure)}</div><div class="d">ARR &times; risk score. A planning heuristic, not a forecast.</div></div><div class="mc"><div class="l">${f.expansion>0?"Expansion upside":"Idle seat spend"}</div><div class="v">${money(f.expansion>0?f.expansion:f.idle)}</div><div class="d">${f.expansion>0?`+${f.sp.add} seats at ${money(f.price)} each a year`:"a year, on seats not in use"}</div></div></div></div>
+   <div><h3 style="margin:0 0 10px;font:600 .95rem var(--sans)">What drives the exposure</h3>${reasonsHTML(M)}</div></div>`+foot(M);
+}
+function rCfo3(M){
+  return head("CFO view","Decisions and what each is worth","Each ask from the review, with its financial effect.")+
+   `<table class="asks"><thead><tr><th>Decision</th><th>Financial effect</th><th>Owner</th><th>By</th></tr></thead><tbody>${M.asks.map(a=>`<tr><td>${esc(a.ask)}</td><td class="why">${esc(a.fin)}</td><td>${esc(a.owner)}</td><td class="when">${fmtD(a.date)}</td></tr>`).join("")}</tbody></table>`+foot(M);
+}
+
+/* ============ SVG charts (measured from the container) ============ */
+function drawCharts(){
+  $$(".chart").forEach(el=>{
+    const W=Math.floor(el.clientWidth); if(W<80)return;
+    el.innerHTML=el.dataset.chart==="seats"?chartSeats(W):chartTickets(W);
+  });
+}
+function axes(W,H,P,max,ms,fmtY){
+  const x=i=>P.l+(W-P.l-P.r)*(ms.length<2?.5:i/(ms.length-1)), y=v=>H-P.b-(H-P.t-P.b)*v/max;
+  let g="";[0,.5,1].forEach(t=>{const v=max*t;g+=`<line class="ax" x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}"/><text class="tx" x="${P.l-8}" y="${y(v)+4}" text-anchor="end">${fmtY(v)}</text>`});
+  ms.forEach((m,i)=>{g+=`<text class="tx" x="${x(i)}" y="${H-8}" text-anchor="middle">${monLab(m.month)}</text>`});
+  return {g,x,y};
+}
+function chartSeats(W){
+  const ms=S.months,H=Math.max(220,Math.min(300,W*.55)),P={l:40,r:16,t:20,b:28};
+  const mx=Math.max(10,...ms.map(m=>Math.max(m.licensed,m.active)))*1.12, a=axes(W,H,P,mx,ms,v=>r0(v));
+  const line=k=>ms.map((m,i)=>(i?"L":"M")+a.x(i).toFixed(1)+" "+a.y(m[k]).toFixed(1)).join(" ");
+  const area=ms.length>1?line("active")+` L${a.x(ms.length-1)} ${a.y(0)} L${a.x(0)} ${a.y(0)} Z`:"";
+  const lab=ms.map((m,i)=>`<circle class="c-pt" cx="${a.x(i)}" cy="${a.y(m.active)}" r="4"/><text class="tx b" x="${a.x(i)}" y="${a.y(m.active)+20}" text-anchor="middle">${r0(m.active)}</text>`).join("");
+  const sm=W<420?"":"";
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Seats licensed versus active by month. Active: ${ms.map(m=>monLab(m.month)+" "+m.active).join(", ")}. Licensed: ${ms.map(m=>m.licensed).join(", ")}.">${a.g}<path class="c-area" d="${area}"/><path class="c-lic" d="${line("licensed")}"/><path class="c-act draw" pathLength="1" d="${line("active")}"/>${lab}</svg>`;
+}
+function chartTickets(W){
+  const ms=S.months,H=Math.max(220,Math.min(300,W*.55)),P={l:40,r:16,t:20,b:28};
+  const mx=Math.max(10,...ms.map(m=>Math.max(m.opened,m.closed)))*1.15, a=axes(W,H,P,mx,ms,v=>r0(v));
+  const slot=(W-P.l-P.r)/ms.length, bw=Math.min(26,slot*.34);
+  const bars=ms.map((m,i)=>{const cx=P.l+slot*(i+.5),h=v=>(H-P.t-P.b)*v/mx;return `<rect class="c-open" x="${cx-bw-1}" y="${H-P.b-h(m.opened)}" width="${bw}" height="${h(m.opened)}" rx="3"/><rect class="c-close" x="${cx+1}" y="${H-P.b-h(m.closed)}" width="${bw}" height="${h(m.closed)}" rx="3"/>${slot>46?`<text class="tx" x="${cx+bw/2+1}" y="${H-P.b-h(m.closed)-5}" text-anchor="middle">${m.closed}</text>`:""}`}).join("");
+  const g=a.g.replace(/<text class="tx" x="[\d.]+" y="\d+" text-anchor="middle">\w+<\/text>/g,"")+ms.map((m,i)=>`<text class="tx" x="${P.l+slot*(i+.5)}" y="${H-8}" text-anchor="middle">${monLab(m.month)}</text>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tickets opened versus closed by month. Opened: ${ms.map(m=>m.opened).join(", ")}. Closed: ${ms.map(m=>m.closed).join(", ")}.">${g}${bars}</svg>`;
+}
+
+/* ============ render orchestration ============ */
+function renderAll(){
+  M=compute(S,W);
+  const set=(id,h)=>{const e=$("#"+id);if(e)e.innerHTML=h};
+  set("d-cover",rCover(M));set("d-health",rHealth(M));set("d-formula",rFormula(M));set("d-goals",rGoals(M));set("d-adopt",rAdopt(M));
+  set("d-support",rSupport(M));set("d-wins",rWins(M));set("d-risks",rRisks(M));set("d-renew",rRenew(M));set("d-asks",rAsks(M));
+  set("d-story",rStory(M));set("d-cfo1",rCfo1(M));set("d-cfo2",rCfo2(M));set("d-cfo3",rCfo3(M));
+  const ls=$("#liveScore");ls.dataset.to=M.health;ls.textContent=r0(M.health);
+  const rb=$("#bRehearse");if(rb)rb.onclick=rehearse;
+  drawCharts();renderCards();
+}
+function renderCards(){
+  const items=[["thriving","Sample 1","Thriving account"],["atrisk","Sample 2","At-risk account"],["expand","Sample 3","Expansion-ready"]];
+  $("#cards").innerHTML=items.map(([id,k,t])=>{const m=compute(SAMPLES[id],DEFW);return `<button class="pick" type="button" data-pick="${id}" aria-current="${S.id===id}"><span class="k">${k}</span><span class="t">${esc(SAMPLES[id].name)}</span><span class="s"><span class="dot ${m.band.k}"></span>${t} &middot; health ${r0(m.health)}</span></button>`}).join("")+
+   `<button class="pick" type="button" data-pick="import" aria-current="${S.id==="import"}"><span class="k">Import</span><span class="t">Paste or load a CSV</span><span class="s">or JSON, stays in your browser</span></button><button class="pick" type="button" data-pick="blank" aria-current="${S.id==="blank"}"><span class="k">Blank</span><span class="t">Start from scratch</span><span class="s">type numbers into the table</span></button>`;
+}
+let io=null;
+function runCount(el){
+  const to=+el.dataset.to,d=+el.dataset.dec||0,pre=el.dataset.pre||"",suf=el.dataset.suf||"";let t0=null;
+  const f=t=>{t0=t0??t;const p=Math.min(1,(t-t0)/1100),e=1-Math.pow(1-p,3);el.textContent=pre+fmt(to*e,d)+suf;if(p<1)requestAnimationFrame(f)};requestAnimationFrame(f);
+}
+function arm(){
+  io&&io.disconnect();const slides=$$(".slide:not([hidden])");
+  if(!MOTION||!("IntersectionObserver" in window)){slides.forEach(s=>s.classList.add("in"));return}
+  slides.forEach(s=>{s.classList.remove("in");$$(".num",s).forEach(n=>n.textContent=(n.dataset.pre||"")+fmt(0,+n.dataset.dec||0)+(n.dataset.suf||""))});
+  io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");$$(".num",e.target).forEach(runCount);io.unobserve(e.target)}}),{threshold:.2});
+  slides.forEach(s=>io.observe(s));
+}
+function setMode(m){
+  MODE=m;$$(".seg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===m));
+  $$(".slide[data-m]").forEach(s=>s.hidden=s.dataset.m!==m);
+  renderAll();arm();window.scrollTo({top:0,behavior:"auto"});
+}
+function load(state,open){
+  S=state;W={...DEFW};syncSliders();renderAll();arm();renderEditor();
+  $("#pasteBox").value=toCSV(S);
+  if(open)openDrawer(open);
+}
+let rt=0;const later=()=>{cancelAnimationFrame(rt);rt=requestAnimationFrame(()=>{S.id==="thriving"||S.id==="atrisk"||S.id==="expand"?(S.id="custom",S.fict=false):0;renderAll()})};
+
+/* rehearse timer */
+let rTimers=[];
+function rehearse(){
+  const btn=$("#bRehearse"),beats=$$(".beat");
+  if(rTimers.length){rTimers.forEach(clearTimeout);rTimers=[];beats.forEach(b=>b.classList.remove("on"));btn.textContent="Rehearse with timer";return}
+  btn.textContent="Stop rehearsal";
+  const T=storyOf(M);
+  beats.forEach((b,i)=>{rTimers.push(setTimeout(()=>{beats.forEach(x=>x.classList.remove("on"));b.classList.add("on");b.scrollIntoView({block:"center",behavior:MOTION?"smooth":"auto"})},T.beats[i].at*1000))});
+  rTimers.push(setTimeout(()=>{beats.forEach(x=>x.classList.remove("on"));rTimers=[];btn.textContent="Rehearse with timer"},T.secs*1000));
+}
+
+/* ============ weights ============ */
+const WL={adoption:"Adoption",support:"Support",sentiment:"Sentiment",engagement:"Engagement"};
+function buildSliders(){
+  $("#sliders").innerHTML=Object.keys(WL).map(k=>`<div class="sl"><label for="w-${k}">${WL[k]}</label><input type="range" id="w-${k}" min="0" max="100" step="1" value="${W[k]}" data-w="${k}"><output id="o-${k}" for="w-${k}"></output></div>`).join("");
+  $$("#sliders input").forEach(i=>i.addEventListener("input",()=>{W[i.dataset.w]=+i.value;renderAll()}));
+}
+function syncSliders(){
+  $$("#sliders input").forEach(i=>i.value=W[i.dataset.w]);
+  const t=W.adoption+W.support+W.sentiment+W.engagement;
+  Object.keys(WL).forEach(k=>{const o=$("#o-"+k);if(o)o.textContent=`${t>0?r0(W[k]/t*100):25}%`});
+}
+const _ra=renderAll;renderAll=function(){_ra();syncSliders()};
+
+/* ============ CSV / JSON ============ */
+const csvq=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+function toCSV(s){
+  const L=[["#meta","name",s.name],["#meta","plan",s.plan],["#meta","preparedBy",s.preparedBy],["#meta","arr",s.arr],["#meta","renewal",s.renewal],["#meta","hoursPerSeat",s.hoursPerSeat],["#meta","hourlyCost",s.hourlyCost]];
+  L.push(["month","licensed","active","opened","closed","ttr_hours","nps","csat","sponsor_meetings"]);
+  s.months.forEach(m=>L.push([m.month,m.licensed,m.active,m.opened,m.closed,m.ttr,m.nps,m.csat,m.sponsor]));
+  s.goals.forEach(g=>L.push(["#goal",g.label,g.baseline,g.target,g.actual,g.unit]));
+  s.teams.forEach((t,i)=>s.features.forEach((f,j)=>L.push(["#adopt",t,f,s.adoption[i]?.[j]??0])));
+  return L.map(r=>r.map(csvq).join(",")).join("\n");
+}
+function csvLine(line){const o=[];let c="",q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(q){if(ch==='"'){if(line[i+1]==='"'){c+='"';i++}else q=false}else c+=ch}else if(ch==='"')q=true;else if(ch===","){o.push(c);c=""}else c+=ch}o.push(c);return o.map(s=>s.trim())}
+function normalize(o){
+  const s=blankState();s.id="import";s.fict=false;
+  ["name","plan","preparedBy","renewal"].forEach(k=>{if(o[k]!=null)s[k]=String(o[k])});
+  ["arr","hoursPerSeat","hourlyCost"].forEach(k=>{if(o[k]!=null)s[k]=num(o[k])});
+  if(!Array.isArray(o.months)||!o.months.length)throw new Error("No monthly rows found. Add rows that start with a month like 2026-07.");
+  s.months=o.months.map(m=>({month:String(m.month||"").slice(0,7),licensed:num(m.licensed),active:num(m.active),opened:num(m.opened),closed:num(m.closed),ttr:num(m.ttr),nps:num(m.nps),csat:num(m.csat),sponsor:num(m.sponsor)}));
+  if(s.months.some(m=>!/^\d{4}-\d{2}$/.test(m.month)))throw new Error("Every month must look like 2026-07 (year, dash, two-digit month).");
+  s.months.sort((a,b)=>a.month<b.month?-1:1);
+  s.goals=(o.goals||[]).map(g=>({label:String(g.label||"Goal"),unit:String(g.unit||""),baseline:num(g.baseline),target:num(g.target),actual:num(g.actual)}));
+  s.teams=(o.teams||[]).map(String);s.features=(o.features||[]).map(String);
+  s.adoption=s.teams.map((t,i)=>s.features.map((f,j)=>clamp(num(o.adoption?.[i]?.[j]))));
+  return s;
+}
+function parseInput(text){
+  text=text.trim();if(!text)throw new Error("Nothing to import. Paste CSV or JSON first.");
+  if(text[0]==="{"){let o;try{o=JSON.parse(text)}catch(e){throw new Error("That looks like JSON but could not be parsed: "+e.message)}return normalize(o)}
+  const o={months:[],goals:[],teams:[],features:[]},cells={};let hdr=null;
+  const alias={month:"month",licensed:"licensed",seats_licensed:"licensed",active:"active",seats_active:"active",opened:"opened",tickets_opened:"opened",closed:"closed",tickets_closed:"closed",ttr:"ttr",ttr_hours:"ttr",time_to_resolution:"ttr",nps:"nps",csat:"csat",sponsor:"sponsor",sponsor_meetings:"sponsor",exec_sponsor:"sponsor"};
+  const pos=["month","licensed","active","opened","closed","ttr","nps","csat","sponsor"];
+  text.split(/\r?\n/).forEach(raw=>{
+    if(!raw.trim())return;const c=csvLine(raw),k=(c[0]||"").toLowerCase();
+    if(k==="#meta")o[c[1]]=c[2];
+    else if(k==="#goal")o.goals.push({label:c[1],baseline:c[2],target:c[3],actual:c[4],unit:c[5]});
+    else if(k==="#adopt"){const[,t,f,v]=c;if(!o.teams.includes(t))o.teams.push(t);if(!o.features.includes(f))o.features.push(f);cells[t+"\u0000"+f]=v}
+    else if(k==="month"||(!/^\d{4}-\d{2}/.test(c[0])&&!hdr&&c.some(x=>alias[x.toLowerCase()]))){hdr=c.map(x=>alias[x.toLowerCase()]||null)}
+    else if(/^\d{4}-\d{2}/.test(c[0])){const m={},cols=hdr||pos;cols.forEach((n,i)=>{if(n)m[n]=c[i]});m.month=c[hdr?hdr.indexOf("month"):0]||c[0];o.months.push(m)}
+  });
+  o.adoption=o.teams.map(t=>o.features.map(f=>cells[t+"\u0000"+f]));
+  return normalize(o);
+}
+
+/* ============ markdown ============ */
+function toMarkdown(M){
+  const S=M.S,f=M.fin,L=[],cur=M.cur;
+  L.push(`# ${S.name}: Quarterly Business Review, ${M.quarter}`,"",`_${S.fict?"Simulated account, fictional data. ":""}Generated by QBR Studio._`,"");
+  if(MODE==="story"){
+    const T=storyOf(M);L.push(`**${M.verdict}**`,"",`## 60-second talk track (about ${T.secs}s, ${T.words} words)`,"");
+    T.beats.forEach(b=>L.push(`- **0:${String(b.at).padStart(2,"0")} ${b.t}.** ${b.x}`));return L.join("\n")+"\n";
+  }
+  if(MODE==="cfo"){
+    L.push(`**${M.cfoVerdict}**`,"","## Return on spend","",`- Annual contract: ${money(f.arr)} (${money(f.q)} a quarter)`,`- Time saved: ${fmt(r0(f.hours))} hours (${r0(cur.act)} active seats x ${S.hoursPerSeat}h x 3 months)`,`- Value of that time: ${money(f.value)} at ${money(S.hourlyCost)} an hour`,`- Return on spend: ${f1(f.roi)}x; cost per active seat ${money(f.perActive)} a month`,`- Idle seat spend: ${money(f.idle)} a year (${r0(100-cur.util)}% of seats inactive)`,"","## Exposure and upside","",`- Renewal risk: ${M.risk.level} (${M.risk.points}/100), ARR exposed ${money(f.exposure)} (ARR x risk score, a planning heuristic)`,
+      f.expansion>0?`- Expansion upside: ${money(f.expansion)} (+${f.sp.add} seats)`:"",`- Renewal: ${fmtD(M.rd)}${M.days!=null?` (${M.days} days)`:""}`,"","### Why",...M.risk.reasons.map(r=>`- +${r.pts}: ${r.text}`),"","## Decisions","","| Decision | Financial effect | Owner | By |","|---|---|---|---|",...M.asks.map(a=>`| ${a.ask} | ${a.fin} | ${a.owner} | ${fmtD(a.date)} |`),"",`_Assumptions: ${S.hoursPerSeat}h saved per active seat per month, ${money(S.hourlyCost)} loaded hourly cost. Estimates, not audited savings._`);
+    return L.filter(x=>x!=="").length?L.join("\n").replace(/\n\n\n+/g,"\n\n")+"\n":"";
+  }
+  L.push(`**${M.verdict}**`,"",`- **Health score:** ${r0(M.health)}/100 (${M.band.t}). Adoption ${r0(M.c.adoption)}, support ${r0(M.c.support)}, sentiment ${r0(M.c.sentiment)}, engagement ${r0(M.c.engagement)}; weights ${r0(M.share("adoption"))}/${r0(M.share("support"))}/${r0(M.share("sentiment"))}/${r0(M.share("engagement"))}`,`- **ARR:** ${money(S.arr)}  **Renewal:** ${fmtD(M.rd)}${M.days!=null?` (${M.days} days)`:""}  **Renewal risk:** ${M.risk.level} (${M.risk.points}/100)`,"","## Value realized vs the customer's goals","");
+  if(M.goals.length)M.goals.forEach(g=>L.push(`- ${g.label}: ${g.baseline} -> ${g.actual} ${g.unit} (target ${g.target}), ${g.pc}% ${g.status}`));else L.push("- No goals captured yet.");
+  L.push("","## Adoption","",`- Seats active: ${r0(cur.act)} of ${r0(cur.lic)} (${r0(cur.util)}%)${M.utilD!=null?`, ${sgn(f1(M.utilD),1)} pts vs prior quarter`:""}`);
+  if(S.teams.length){L.push("","| Team | "+S.features.join(" | ")+" |","|---|"+S.features.map(()=>"---:").join("|")+"|",...S.teams.map((t,i)=>`| ${t} | ${S.adoption[i].map(r0).join(" | ")} |`))}
+  L.push("","## Support and sentiment","",`- Tickets: ${cur.opened} opened, ${cur.closed} closed (${r0(cur.closure)}%)`,`- Time to resolution: ${f1(cur.ttr)}h`,`- NPS ${r0(cur.nps)}, CSAT ${r0(cur.csat)}%, sponsor touchpoints ${f1(cur.spons)} a month`,"","## Three wins","",...M.wins.map(w=>`1. **${w.title}** (${w.big}). ${w.detail}`),"","## Three risks","",...M.risks.map(r=>`1. **${r.title}.** ${r.detail} Owner: ${r.owner}, by ${fmtD(r.due)}. Next step: ${r.action}`),"","## Renewal risk","",`${M.risk.level}, ${M.risk.points}/100:`,...M.risk.reasons.map(r=>`- +${r.pts}: ${r.text}`),"","## Asks and next steps","","| Ask | Why | Owner | By |","|---|---|---|---|",...M.asks.map(a=>`| ${a.ask} | ${a.why} | ${a.owner} | ${fmtD(a.date)} |`));
+  return L.join("\n")+"\n";
+}
+
+/* ============ editor drawer ============ */
+const MC=[["month","Month","m","text"],["licensed","Licensed"],["active","Active"],["opened","Opened"],["closed","Closed"],["ttr","TTR h"],["nps","NPS"],["csat","CSAT %"],["sponsor","Sponsor mtgs"]];
+const inp=(path,v,type="number",extra="")=>`<input ${type==="number"?'type="number" step="any" inputmode="decimal"':'type="text"'} data-p="${path}" value="${esc(v)}" ${extra}>`;
+function renderEditor(){
+  const s=S;
+  $("#pT").innerHTML=`<div class="fg">
+   <label class="full">Account name<input class="in-f" data-p="name" value="${esc(s.name)}"></label>
+   <label class="full">Plan / description<input class="in-f" data-p="plan" value="${esc(s.plan)}"></label>
+   <label>ARR ($)<input class="in-f" type="number" data-p="arr" value="${s.arr}"></label>
+   <label>Renewal date<input class="in-f" type="date" data-p="renewal" value="${esc(s.renewal)}"></label>
+   <label>Hours saved per active seat per month<input class="in-f" type="number" step="any" data-p="hoursPerSeat" value="${s.hoursPerSeat}"></label>
+   <label>Loaded cost per hour ($)<input class="in-f" type="number" step="any" data-p="hourlyCost" value="${s.hourlyCost}"></label></div>
+   <h3>Monthly usage and outcomes</h3><div class="tw"><table class="ed"><thead><tr>${MC.map(c=>`<th>${c[1]}</th>`).join("")}<th><span class="sr">Remove</span></th></tr></thead><tbody>${s.months.map((m,i)=>`<tr>${MC.map(c=>`<td class="${c[2]||""}">${inp(`months.${i}.${c[0]}`,m[c[0]],c[3]||"number",`aria-label="${c[1]}, row ${i+1}"`)}</td>`).join("")}<td><button class="xbtn" type="button" data-del="months.${i}" aria-label="Remove month ${i+1}">&times;</button></td></tr>`).join("")}</tbody></table></div>
+   <div class="row"><button class="btn sm" type="button" data-add="month">Add month</button></div>
+   <h3>Customer's stated goals</h3><div class="tw"><table class="ed"><thead><tr><th>Goal</th><th>Unit</th><th>Start</th><th>Target</th><th>Actual</th><th></th></tr></thead><tbody>${s.goals.map((g,i)=>`<tr><td class="t">${inp(`goals.${i}.label`,g.label,"text",`aria-label="Goal ${i+1}"`)}</td><td>${inp(`goals.${i}.unit`,g.unit,"text",`aria-label="Unit"`)}</td><td>${inp(`goals.${i}.baseline`,g.baseline,"number",`aria-label="Start"`)}</td><td>${inp(`goals.${i}.target`,g.target,"number",`aria-label="Target"`)}</td><td>${inp(`goals.${i}.actual`,g.actual,"number",`aria-label="Actual"`)}</td><td><button class="xbtn" type="button" data-del="goals.${i}" aria-label="Remove goal ${i+1}">&times;</button></td></tr>`).join("")}</tbody></table></div>
+   <div class="row"><button class="btn sm" type="button" data-add="goal">Add goal</button></div>
+   <h3>Adoption grid (% of team using each feature)</h3><div class="tw"><table class="ed"><thead><tr><th>Team</th>${s.features.map((f,j)=>`<th>${inp(`features.${j}`,f,"text",`aria-label="Feature ${j+1} name"`)}</th>`).join("")}<th></th></tr></thead><tbody>${s.teams.map((t,i)=>`<tr><td class="t">${inp(`teams.${i}`,t,"text",`aria-label="Team ${i+1} name"`)}</td>${s.features.map((f,j)=>`<td>${inp(`adoption.${i}.${j}`,s.adoption[i][j],"number",`min="0" max="100" aria-label="${esc(t)} ${esc(f)}"`)}</td>`).join("")}<td><button class="xbtn" type="button" data-del="teams.${i}" aria-label="Remove team ${i+1}">&times;</button></td></tr>`).join("")}</tbody></table></div>
+   <div class="row"><button class="btn sm" type="button" data-add="team">Add team</button><button class="btn sm" type="button" data-add="feature">Add feature</button></div>`;
+}
+function setPath(path,val){
+  const p=path.split("."),root=S;let o=root;for(let i=0;i<p.length-1;i++)o=o[p[i]];
+  const k=p[p.length-1],isText=["name","plan","renewal","month","label","unit"].includes(k)||p[0]==="teams"||p[0]==="features";
+  o[k]=isText?val:(p[0]==="adoption"?clamp(num(val)):num(val));
+}
+function editorClick(e){
+  const a=e.target.closest("[data-add]"),d=e.target.closest("[data-del]");
+  if(a){
+    const w=a.dataset.add;
+    if(w==="month"){const l=S.months.at(-1)?.month||"2026-06",y=+l.slice(0,4),m=+l.slice(5,7);const nm=m===12?`${y+1}-01`:`${y}-${String(m+1).padStart(2,"0")}`;S.months.push({month:nm,licensed:S.months.at(-1)?.licensed||0,active:0,opened:0,closed:0,ttr:0,nps:0,csat:0,sponsor:0})}
+    if(w==="goal")S.goals.push({label:"New goal",unit:"",baseline:0,target:100,actual:0});
+    if(w==="team"){S.teams.push("New team");S.adoption.push(S.features.map(()=>0))}
+    if(w==="feature"){S.features.push("New feature");S.adoption.forEach(r=>r.push(0))}
+  }else if(d){
+    const[k,i]=d.dataset.del.split(".");if(k==="months"&&S.months.length<=1)return toast("Keep at least one month");
+    if(k==="teams")S.adoption.splice(+i,1);S[k].splice(+i,1);
+  }else return;
+  later();renderEditor();
+}
+
+/* ============ drawer, toast, export ============ */
+let lastFocus=null;
+function openDrawer(tab){
+  const d=$("#drawer");lastFocus=document.activeElement;d.inert=false;d.removeAttribute("aria-hidden");d.classList.add("open");$("#bEdit").setAttribute("aria-expanded","true");
+  setTab(tab==="paste"?"P":"T");setTimeout(()=>(tab==="paste"?$("#pasteBox"):$("#pT input")).focus(),50);
+}
+function closeDrawer(){
+  const d=$("#drawer");d.classList.remove("open");d.inert=true;d.setAttribute("aria-hidden","true");$("#bEdit").setAttribute("aria-expanded","false");(lastFocus&&lastFocus.focus)&&lastFocus.focus();
+}
+function setTab(t){
+  $("#tabT").setAttribute("aria-selected",t==="T");$("#tabP").setAttribute("aria-selected",t==="P");$("#pT").hidden=t!=="T";$("#pP").hidden=t!=="P";
+  if(t==="P"&&!$("#pasteBox").value)$("#pasteBox").value=toCSV(S);
+}
+let tt=0;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2400)}
+async function copyMd(){
+  const md=toMarkdown(M);let ok=false;
+  try{await navigator.clipboard.writeText(md);ok=true}catch(e){
+    try{const t=document.createElement("textarea");t.value=md;t.style.position="fixed";t.style.opacity="0";document.body.appendChild(t);t.select();ok=document.execCommand("copy");t.remove()}catch(e2){}
+  }
+  if(ok)toast(`Copied ${md.split("\n").length} lines of markdown`);else{$("#mdBox").value=md;$("#mdDlg").showModal();$("#mdBox").select()}
+}
+function download(name,text,type){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+function finishAll(){$$(".slide").forEach(s=>s.classList.add("in"));$$(".num").forEach(n=>n.textContent=(n.dataset.pre||"")+fmt(+n.dataset.to,+n.dataset.dec||0)+(n.dataset.suf||""));drawCharts()}
+
+/* ============ wire up ============ */
+buildSliders();
+$(".seg").addEventListener("click",e=>{const b=e.target.closest("button");if(b)setMode(b.dataset.mode)});
+$("#cards").addEventListener("click",e=>{
+  const b=e.target.closest("[data-pick]");if(!b)return;const id=b.dataset.pick;
+  if(id==="blank")load(blankState(),"table");
+  else if(id==="import"){const s=blankState();s.id="import";load(s);$("#pasteBox").value=toCSV(SAMPLES.expand).split("\n").slice(0,12).join("\n")+"\n";openDrawer("paste");toast("Paste your CSV or JSON, then Apply")}
+  else load(clone(SAMPLES[id]));
+  if(id!=="import"&&id!=="blank")window.scrollTo({top:$("#deck").offsetTop-70,behavior:MOTION?"smooth":"auto"});
+});
+$("#drawer").addEventListener("input",e=>{const p=e.target.dataset.p;if(!p)return;setPath(p,e.target.value);later()});
+$("#drawer").addEventListener("click",editorClick);
+$("#bEdit").onclick=()=>$("#drawer").classList.contains("open")?closeDrawer():openDrawer("table");
+$("#dClose").onclick=closeDrawer;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#drawer").classList.contains("open"))closeDrawer()});
+$("#tabT").onclick=()=>setTab("T");$("#tabP").onclick=()=>setTab("P");
+$("#pApply").onclick=()=>{
+  try{const s=parseInput($("#pasteBox").value);$("#pasteErr").textContent="";load(s);toast(`Loaded ${s.months.length} months for ${s.name}`);setTab("T")}
+  catch(err){$("#pasteErr").textContent=err.message}
+};
+$("#pCur").onclick=()=>{$("#pasteBox").value=toCSV(S);$("#pasteErr").textContent=""};
+$("#pJson").onclick=()=>{const{id,fict,...r}=S;$("#pasteBox").value=JSON.stringify(r,null,1);$("#pasteErr").textContent=""};
+$("#pDl").onclick=()=>download((S.name.replace(/[^\w]+/g,"-").toLowerCase()||"account")+".csv",toCSV(S),"text/csv");
+$("#pFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("#pasteBox").value=String(r.result);$("#pApply").click()};r.readAsText(f);e.target.value=""};
+$("#pFileL").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("#pFile").click()}});
+$("#wReset").onclick=()=>{W={...DEFW};$$("#sliders input").forEach(i=>i.value=W[i.dataset.w]);renderAll()};
+$("#bMd").onclick=copyMd;
+$("#mdClose").onclick=()=>$("#mdDlg").close();
+$("#bPrint").onclick=()=>{finishAll();setTimeout(()=>window.print(),80)};
+window.addEventListener("beforeprint",finishAll);
+$("#bTheme").onclick=e=>{const ink=document.documentElement.dataset.theme!=="ink";document.documentElement.dataset.theme=ink?"ink":"paper";e.currentTarget.setAttribute("aria-pressed",ink);e.currentTarget.textContent=ink?"Paper theme":"Ink theme"};
+let rz=0;window.addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(drawCharts,120)});
+
+load(clone(SAMPLES.thriving));
+window.__qbr={compute,parseInput,toCSV,storyOf,toMarkdown,SAMPLES,get S(){return S},get M(){return M},get W(){return W}};
+</script>
+</body>
+</html>
